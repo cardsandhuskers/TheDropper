@@ -1,0 +1,26 @@
+name: TheDropper
+version: '${project.version}'
+main: io.github.cardsandhuskers.thedropper.TheDropper
+api-version: 1.19
+authors: [ cardsandhuskers ]
+description: the dropper game plugin
+depend: [PlayerPoints, PlaceholderAPI, Teams]
+commands:
+  setDropperButton:
+    description: sets the location for a button
+    usage: /<command> [level]
+  setDropperLevelSpawn:
+    description: sets the location for a button
+    usage: /<command> [level]
+  startDropper:
+    description: starts the game
+    usage: /<command>
+  setDropperSpawn:
+    description: sets the world spawn location
+    usage: /<command>
+  setDropperLobby:
+    description: sets the lobby location
+    usage: /<command>
+  setDropperDiamondChest:
+    description: sets the location for a chest
+    usage: /<command> [level]

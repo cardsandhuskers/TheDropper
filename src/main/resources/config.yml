@@ -1,0 +1,10 @@
+PregameTime: 45
+GameTime: 720
+PostgameTime: 30
+
+#1st place points
+maxPoints: 25
+#subtract this from 25 for each player ahead
+dropOff: 1
+#given for finding a diamond
+diamondPoints: 25
