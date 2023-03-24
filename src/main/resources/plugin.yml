@@ -4,7 +4,7 @@ main: io.github.cardsandhuskers.thedropper.TheDropper
 api-version: 1.19
 authors: [ cardsandhuskers ]
 description: the dropper game plugin
-depend: [PlayerPoints, PlaceholderAPI, Teams]
+depend: [PlaceholderAPI, Teams]
 commands:
   setDropperButton:
     description: sets the location for a button

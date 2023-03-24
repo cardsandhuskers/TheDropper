@@ -8,6 +8,9 @@ import io.github.cardsandhuskers.thedropper.listeners.ItemClickListener;
 import io.github.cardsandhuskers.thedropper.listeners.PlayerDamageListener;
 import io.github.cardsandhuskers.thedropper.listeners.PlayerJoinListener;
 import io.github.cardsandhuskers.thedropper.objects.Countdown;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.lang3.StringUtils;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -17,9 +20,15 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
 
+import static io.github.cardsandhuskers.teams.Teams.handler;
 import static io.github.cardsandhuskers.thedropper.TheDropper.*;
 
 public class GameStageHandler {
@@ -29,7 +38,10 @@ public class GameStageHandler {
     private ArrayList<Block> buttons;
     private TheDropper plugin;
     private Countdown gameTimer;
+    public HashMap<Player, Integer> wins;
+    public static int numLevels = 0;
     public GameStageHandler(TheDropper plugin) {
+        wins = new HashMap<>();
         this.plugin = plugin;
     }
 
@@ -87,6 +99,7 @@ public class GameStageHandler {
             levels.add(plugin.getConfig().getLocation("levels." + counter));
             counter++;
         }
+        numLevels = counter;
 
         counter = 1;
         while(plugin.getConfig().getLocation("buttons." + counter) != null) {
@@ -103,7 +116,7 @@ public class GameStageHandler {
         plugin.getServer().getPluginManager().registerEvents(new PlayerDamageListener(levels), plugin);
         plugin.getServer().getPluginManager().registerEvents(new ButtonPressListener(playersCompleted, buttons, levels, this), plugin);
         plugin.getServer().getPluginManager().registerEvents(new PlayerJoinListener(plugin, levels), plugin);
-        plugin.getServer().getPluginManager().registerEvents(new ItemClickListener(ppAPI), plugin);
+        plugin.getServer().getPluginManager().registerEvents(new ItemClickListener(), plugin);
 
         pregameCountdown();
     }
@@ -131,6 +144,7 @@ public class GameStageHandler {
                         } else {
                             p.setGameMode(GameMode.SPECTATOR);
                         }
+                        p.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, 18000, 1));
                     }
                     TheDropper.timeVar = 0;
                     gameTimer();
@@ -254,6 +268,15 @@ public class GameStageHandler {
 
                 //Timer End
                 () -> {
+                    try {
+                        saveRecords();
+                    } catch (IOException e) {
+                        StackTraceElement[] trace = e.getStackTrace();
+                        String str = "";
+                        for(StackTraceElement element:trace) str += element.toString() + "\n";
+                        plugin.getLogger().severe("ERROR Calculating Stats!\n" + str);
+                    }
+
                     for(Player p:Bukkit.getOnlinePlayers()) {
                         if(plugin.getConfig().getLocation("lobby") != null) {
                             p.teleport(plugin.getConfig().getLocation("lobby"));
@@ -351,6 +374,47 @@ public class GameStageHandler {
         // Start scheduling, don't use the "run" method unless you want to skip a second
         gameEndTimer.scheduleTimer();
 
+
+    }
+
+    public void saveRecords() throws IOException {
+        for(Player p:wins.keySet()) if(p != null) System.out.println(p.getDisplayName() + ": " + wins.get(p));
+        System.out.println("~~~~~~~~~~~~~~~");
+
+        FileWriter writer = new FileWriter("plugins/TheDropper/stats.csv", true);
+        FileReader reader = new FileReader("plugins/TheDropper/stats.csv");
+
+        String[] headers = {"Event", "Team", "Name", "Wins"};
+
+        CSVFormat.Builder builder = CSVFormat.Builder.create();
+        builder.setHeader(headers);
+        CSVFormat format = builder.build();
+
+        CSVParser parser = new CSVParser(reader, format);
+
+        if(!parser.getRecords().isEmpty()) {
+            format = CSVFormat.DEFAULT;
+        }
+
+        CSVPrinter printer = new CSVPrinter(writer, format);
+
+        int eventNum;
+        try {eventNum = Bukkit.getPluginManager().getPlugin("LobbyPlugin").getConfig().getInt("eventNum");} catch (Exception e) {eventNum = 1;}
+        //printer.printRecord(currentGame);
+        for(Player p:wins.keySet()) {
+            if(p == null) continue;
+            if(handler.getPlayerTeam(p) == null) continue;
+            printer.printRecord(eventNum, handler.getPlayerTeam(p).getTeamName(), p.getDisplayName(), wins.get(p));
+        }
+        writer.close();
+        try {
+            plugin.statCalculator.calculateStats();
+        } catch (Exception e) {
+            StackTraceElement[] trace = e.getStackTrace();
+            String str = "";
+            for(StackTraceElement element:trace) str += element.toString() + "\n";
+            plugin.getLogger().severe("ERROR Calculating Stats!\n" + str);
+        }
 
     }
 }

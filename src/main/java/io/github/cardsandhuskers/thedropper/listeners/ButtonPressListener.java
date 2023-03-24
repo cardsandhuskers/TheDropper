@@ -3,7 +3,6 @@ package io.github.cardsandhuskers.thedropper.listeners;
 import io.github.cardsandhuskers.teams.objects.Team;
 import io.github.cardsandhuskers.thedropper.TheDropper;
 import io.github.cardsandhuskers.thedropper.handlers.GameStageHandler;
-import org.black_ixx.playerpoints.PlayerPointsAPI;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -44,10 +43,11 @@ public class ButtonPressListener implements Listener {
                 if(loc.equals(buttons.get(level - 1).getLocation())) {
                     currentLevel.put(p.getUniqueId(), currentLevel.get(p.getUniqueId()) + 1);
 
-                    if(level < levels.size()) {
+                    //level indexes from 1
+                    if(level < levels.size() + 1) {
                         //level is past level and levels indexes from 0, so no + or - necessary
                         p.teleport(levels.get(level));
-                        if (level < levels.size() - 1) {
+                        if (level < levels.size()) {
                             givePoints(p);
                         } else {
                             givePoints(p);
@@ -77,10 +77,17 @@ public class ButtonPressListener implements Listener {
         int numCompleted = playersCompleted.get(level);
         if(handler.getPlayerTeam(p) != null) {
             Team t = handler.getPlayerTeam(p);
-            int maxPoints = plugin.getConfig().getInt("maxPoints");
-            int dropOff = plugin.getConfig().getInt("dropOff");
+            double maxPoints = plugin.getConfig().getInt("maxPoints") * multiplier;
+            double dropOff = plugin.getConfig().getInt("dropOff") * multiplier;
 
-            int points = (int)((maxPoints - (dropOff * numCompleted)) * multiplier);
+            double points = maxPoints - (dropOff * numCompleted);
+
+            if(numCompleted == 0) {
+                if(gameStageHandler.wins.containsKey(p)) gameStageHandler.wins.put(p, gameStageHandler.wins.get(p) + 1);
+                else gameStageHandler.wins.put(p, 1);
+            }
+
+
             for (Player player : Bukkit.getOnlinePlayers()) {
                 if (player.equals(p)) {
                     switch(numCompleted) {
@@ -114,7 +121,6 @@ public class ButtonPressListener implements Listener {
                 }
             }
             t.addTempPoints(p, points);
-            ppAPI.give(p.getUniqueId(), points);
 
             playersCompleted.put(level, playersCompleted.get(level) + 1);
         }

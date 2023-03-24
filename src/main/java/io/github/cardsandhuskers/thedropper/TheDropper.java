@@ -4,27 +4,18 @@ import io.github.cardsandhuskers.teams.Teams;
 import io.github.cardsandhuskers.teams.handlers.TeamHandler;
 import io.github.cardsandhuskers.thedropper.commands.*;
 import io.github.cardsandhuskers.thedropper.objects.Placeholder;
-import org.black_ixx.playerpoints.PlayerPoints;
-import org.black_ixx.playerpoints.PlayerPointsAPI;
+import io.github.cardsandhuskers.thedropper.objects.StatCalculator;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class TheDropper extends JavaPlugin {
     public static TeamHandler handler;
-    public static int timeVar = 0;
+    public static int timeVar = 0, numRounds;
     public static double multiplier;
-    public static PlayerPointsAPI ppAPI;
     public static State gameState = State.GAME_STARTING;
+    public StatCalculator statCalculator;
     @Override
     public void onEnable() {
-        if (Bukkit.getPluginManager().isPluginEnabled("PlayerPoints")) {
-            this.ppAPI = PlayerPoints.getInstance().getAPI();
-        } else {
-            System.out.println("Could not find PlayerPointsAPI! This plugin is required.");
-            Bukkit.getPluginManager().disablePlugin(this);
-        }
-
-
         //Placeholder API validation
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
             /*
@@ -57,6 +48,16 @@ public final class TheDropper extends JavaPlugin {
 
         saveDefaultConfig();
         getConfig().options().copyDefaults(true);
+
+        statCalculator = new StatCalculator(this);
+        try {
+            statCalculator.calculateStats();
+        } catch (Exception e) {
+            StackTraceElement[] trace = e.getStackTrace();
+            String str = "";
+            for(StackTraceElement element:trace) str += element.toString() + "\n";
+            this.getLogger().severe("ERROR Calculating Stats!\n" + str);
+        }
 
     }
 
