@@ -3,11 +3,18 @@ package io.github.cardsandhuskers.thedropper.objects;
 import io.github.cardsandhuskers.thedropper.TheDropper;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
+
+import static io.github.cardsandhuskers.teams.Teams.handler;
+import static io.github.cardsandhuskers.thedropper.handlers.GameStageHandler.wins;
 
 public class StatCalculator {
     private TheDropper plugin;
@@ -50,7 +57,7 @@ public class StatCalculator {
             if (r.getRecordNumber() == 1) continue;
             String name = r.get(2);
             if(playerStatsMap.containsKey(name)) playerStatsMap.get(name).wins += Integer.parseInt(r.get(3));
-            else playerStatsMap.put(name, new PlayerStatsHolder(name));
+            else playerStatsMap.put(name, new PlayerStatsHolder(name, Integer.parseInt(r.get(3))));
         }
         playerStatsHolders = new ArrayList<>(playerStatsMap.values());
         Comparator playerStatsComparator = new PlayerStatsComparator();
@@ -59,6 +66,49 @@ public class StatCalculator {
 
     }
 
+
+    public void saveRecords() throws IOException {
+        for(Player p:wins.keySet()) if(p != null) System.out.println(p.getDisplayName() + ": " + wins.get(p));
+        System.out.println("~~~~~~~~~~~~~~~");
+
+        FileWriter writer = new FileWriter("plugins/TheDropper/stats.csv", true);
+        FileReader reader = new FileReader("plugins/TheDropper/stats.csv");
+
+        String[] headers = {"Event", "Team", "Name", "Wins"};
+
+        CSVFormat.Builder builder = CSVFormat.Builder.create();
+        builder.setHeader(headers);
+        CSVFormat format = builder.build();
+
+        CSVParser parser = new CSVParser(reader, format);
+
+        if(!parser.getRecords().isEmpty()) {
+            format = CSVFormat.DEFAULT;
+        }
+
+        CSVPrinter printer = new CSVPrinter(writer, format);
+
+        int eventNum;
+        try {eventNum = Bukkit.getPluginManager().getPlugin("LobbyPlugin").getConfig().getInt("eventNum");} catch (Exception e) {eventNum = 1;}
+        //printer.printRecord(currentGame);
+        for(Player p:wins.keySet()) {
+            if(p == null) continue;
+            if(handler.getPlayerTeam(p) == null) continue;
+            printer.printRecord(eventNum, handler.getPlayerTeam(p).getTeamName(), p.getDisplayName(), wins.get(p));
+        }
+        writer.close();
+        try {
+            plugin.statCalculator.calculateStats();
+        } catch (Exception e) {
+            StackTraceElement[] trace = e.getStackTrace();
+            String str = "";
+            for(StackTraceElement element:trace) str += element.toString() + "\n";
+            plugin.getLogger().severe("ERROR Calculating Stats!\n" + str);
+        }
+
+    }
+
+
     public ArrayList<PlayerStatsHolder> getPlayerStatsHolders() {
         return new ArrayList<>(playerStatsHolders);
     }
@@ -66,9 +116,9 @@ public class StatCalculator {
     public class PlayerStatsHolder {
         int wins;
         String name;
-        public PlayerStatsHolder(String name) {
+        public PlayerStatsHolder(String name, int wins) {
             this.name = name;
-            wins = 1;
+            this.wins = wins;
         }
     }
     public class PlayerStatsComparator implements Comparator<PlayerStatsHolder> {

@@ -8,9 +8,6 @@ import io.github.cardsandhuskers.thedropper.listeners.ItemClickListener;
 import io.github.cardsandhuskers.thedropper.listeners.PlayerDamageListener;
 import io.github.cardsandhuskers.thedropper.listeners.PlayerJoinListener;
 import io.github.cardsandhuskers.thedropper.objects.Countdown;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.lang3.StringUtils;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -23,8 +20,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 
@@ -38,8 +33,25 @@ public class GameStageHandler {
     private ArrayList<Block> buttons;
     private TheDropper plugin;
     private Countdown gameTimer;
-    public HashMap<Player, Integer> wins;
+    public static HashMap<Player, Integer> wins;
     public static int numLevels = 0;
+    private String GAME_DESCRIPTION =
+                            ChatColor.STRIKETHROUGH + "----------------------------------------\n" +
+                            StringUtils.center(ChatColor.GOLD + "" + ChatColor.BOLD + "The Dropper", 30) +
+                            ChatColor.BLUE + "" + ChatColor.BOLD + "\nHow To Play:" +
+                            "\nWelcome to the dropper!" +
+                            "\nThere are 15 levels, you will have " + ChatColor.YELLOW + "" + ChatColor.BOLD + 12 + ChatColor.RESET + " minutes to complete as many levels as you can!" +
+                            "\nEach level will have a hidden chest that contains 1 diamond! The first person to find this diamond gets bonus points!" +
+                            "\nMake sure to turn your Render Distance up! At least 16 chunks is recommended if your computer can handle it." +
+                            ChatColor.STRIKETHROUGH + "\n----------------------------------------",
+                    POINTS_DESCRIPTION = ChatColor.STRIKETHROUGH + "----------------------------------------" +
+                            ChatColor.GOLD + "" + ChatColor.BOLD + "\nHow the game is Scored (for each level):" +
+                            "\n1st Place: " + ChatColor.GOLD + (int)(plugin.getConfig().getInt("maxPoints") * multiplier) + ChatColor.RESET + " points" +
+                            "\nWith: -" + ChatColor.GOLD + (int)(plugin.getConfig().getInt("dropOff") * multiplier) + ChatColor.RESET + " point for each player ahead" +
+                            //"\nFor finding a " + ChatColor.AQUA + "" + ChatColor.BOLD + "Diamond" + ChatColor.RESET + ": " +
+                            //ChatColor.GOLD + (int)(plugin.getConfig().getInt("diamondPoints") * multiplier) + ChatColor.RESET + " points" +
+                            ChatColor.STRIKETHROUGH + "\n----------------------------------------";
+
     public GameStageHandler(TheDropper plugin) {
         wins = new HashMap<>();
         this.plugin = plugin;
@@ -78,6 +90,17 @@ public class GameStageHandler {
                 currentLevel.put(p.getUniqueId(), 1);
             }
         }
+
+
+        World world = plugin.getConfig().getLocation("spawn").getWorld();
+        world.setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false);
+        world.setGameRule(GameRule.DO_MOB_SPAWNING, false);
+        world.setGameRule(GameRule.DO_TRADER_SPAWNING, false);
+        for(org.bukkit.scoreboard.Team t:Bukkit.getScoreboardManager().getMainScoreboard().getTeams()) {
+            t.setOption(org.bukkit.scoreboard.Team.Option.COLLISION_RULE, org.bukkit.scoreboard.Team.OptionStatus.ALWAYS);
+        }
+
+
         //fill chests
         int counter = 1;
         while(plugin.getConfig().getLocation("chests." + counter) != null) {
@@ -153,26 +176,8 @@ public class GameStageHandler {
 
                 //Each Second
                 (t) -> {
-                    if(t.getSecondsLeft() == t.getTotalSeconds() - 2) {
-                        Bukkit.broadcastMessage(ChatColor.STRIKETHROUGH + "----------------------------------------");
-                        Bukkit.broadcastMessage(StringUtils.center(ChatColor.GOLD + "" + ChatColor.BOLD + "The Dropper", 30));
-                        Bukkit.broadcastMessage(ChatColor.BLUE + "" + ChatColor.BOLD + "How To Play:");
-                        Bukkit.broadcastMessage("Welcome to the dropper!" +
-                                "\nThere are 15 levels, you will have " + ChatColor.YELLOW + "" + ChatColor.BOLD + 12 + ChatColor.RESET + " minutes to complete as many levels as you can!" +
-                                "\nEach level will have a hidden chest that contains 1 diamond! The first person to find this diamond gets bonus points!" +
-                                "\nMake sure to turn your Render Distance up! At least 16 chunks is recommended if your computer can handle it.");
-                        Bukkit.broadcastMessage(ChatColor.STRIKETHROUGH + "----------------------------------------");
-                    }
-                    if(t.getSecondsLeft() == t.getTotalSeconds() - 12) {
-                        Bukkit.broadcastMessage(ChatColor.STRIKETHROUGH + "----------------------------------------");
-                        Bukkit.broadcastMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "How the game is Scored (for each level):");
-                        Bukkit.broadcastMessage("1st Place: " + ChatColor.GOLD + (int)(plugin.getConfig().getInt("maxPoints") * multiplier) + ChatColor.RESET + " points" +
-                                //"\n2nd Place: " + ChatColor.GOLD + (int)(49 * multiplier) + ChatColor.RESET + " points" +
-                                //"\n3rd Place: " + ChatColor.GOLD + (int)(48 * multiplier) + ChatColor.RESET + " points" +
-                                "\nWith: -" + ChatColor.GOLD + (int)(plugin.getConfig().getInt("dropOff") * multiplier) + ChatColor.RESET + " point for each player ahead" +
-                                "\nFor finding a " + ChatColor.AQUA + "" + ChatColor.BOLD + "Diamond" + ChatColor.RESET + ": " + ChatColor.GOLD + (int)(plugin.getConfig().getInt("diamondPoints") * multiplier) + ChatColor.RESET + " points");
-                        Bukkit.broadcastMessage(ChatColor.STRIKETHROUGH + "----------------------------------------");
-                    }
+                    if(t.getSecondsLeft() == t.getTotalSeconds() - 2) Bukkit.broadcastMessage(GAME_DESCRIPTION);
+                    if(t.getSecondsLeft() == t.getTotalSeconds() - 12) Bukkit.broadcastMessage(POINTS_DESCRIPTION);
 
                     TheDropper.timeVar = t.getSecondsLeft();
                     if(t.getSecondsLeft() <= 4) {
@@ -249,6 +254,9 @@ public class GameStageHandler {
             p.teleport(levels.get(levels.size() - 1));
         }
         HandlerList.unregisterAll(plugin);
+        for(org.bukkit.scoreboard.Team t:Bukkit.getScoreboardManager().getMainScoreboard().getTeams()) {
+            t.setOption(org.bukkit.scoreboard.Team.Option.COLLISION_RULE, org.bukkit.scoreboard.Team.OptionStatus.ALWAYS);
+        }
 
         Countdown gameEndTimer = new Countdown((JavaPlugin)plugin,
                 //should be 60
@@ -269,7 +277,7 @@ public class GameStageHandler {
                 //Timer End
                 () -> {
                     try {
-                        saveRecords();
+                        plugin.statCalculator.saveRecords();
                     } catch (IOException e) {
                         StackTraceElement[] trace = e.getStackTrace();
                         String str = "";
@@ -377,44 +385,4 @@ public class GameStageHandler {
 
     }
 
-    public void saveRecords() throws IOException {
-        for(Player p:wins.keySet()) if(p != null) System.out.println(p.getDisplayName() + ": " + wins.get(p));
-        System.out.println("~~~~~~~~~~~~~~~");
-
-        FileWriter writer = new FileWriter("plugins/TheDropper/stats.csv", true);
-        FileReader reader = new FileReader("plugins/TheDropper/stats.csv");
-
-        String[] headers = {"Event", "Team", "Name", "Wins"};
-
-        CSVFormat.Builder builder = CSVFormat.Builder.create();
-        builder.setHeader(headers);
-        CSVFormat format = builder.build();
-
-        CSVParser parser = new CSVParser(reader, format);
-
-        if(!parser.getRecords().isEmpty()) {
-            format = CSVFormat.DEFAULT;
-        }
-
-        CSVPrinter printer = new CSVPrinter(writer, format);
-
-        int eventNum;
-        try {eventNum = Bukkit.getPluginManager().getPlugin("LobbyPlugin").getConfig().getInt("eventNum");} catch (Exception e) {eventNum = 1;}
-        //printer.printRecord(currentGame);
-        for(Player p:wins.keySet()) {
-            if(p == null) continue;
-            if(handler.getPlayerTeam(p) == null) continue;
-            printer.printRecord(eventNum, handler.getPlayerTeam(p).getTeamName(), p.getDisplayName(), wins.get(p));
-        }
-        writer.close();
-        try {
-            plugin.statCalculator.calculateStats();
-        } catch (Exception e) {
-            StackTraceElement[] trace = e.getStackTrace();
-            String str = "";
-            for(StackTraceElement element:trace) str += element.toString() + "\n";
-            plugin.getLogger().severe("ERROR Calculating Stats!\n" + str);
-        }
-
-    }
 }

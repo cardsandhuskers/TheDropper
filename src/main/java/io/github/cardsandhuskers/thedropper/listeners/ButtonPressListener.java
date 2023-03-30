@@ -45,12 +45,12 @@ public class ButtonPressListener implements Listener {
 
                     //level indexes from 1
                     if(level < levels.size() + 1) {
+                        System.out.println(level);
+                        System.out.println(levels.size());
                         //level is past level and levels indexes from 0, so no + or - necessary
                         p.teleport(levels.get(level));
-                        if (level < levels.size()) {
-                            givePoints(p);
-                        } else {
-                            givePoints(p);
+                        givePoints(p);
+                        if (level >= levels.size() - 1) {
                             p.sendMessage("YOU win");
                             p.setGameMode(GameMode.SPECTATOR);
 
@@ -68,9 +68,9 @@ public class ButtonPressListener implements Listener {
         p.setHealth(20);
         p.setFoodLevel(20);
         p.setSaturation(20);
-        for(PotionEffect e:p.getActivePotionEffects()) {
-            p.removePotionEffect(e.getType());
-        }
+        //for(PotionEffect e:p.getActivePotionEffects()) {
+        //    p.removePotionEffect(e.getType());
+        //}
         p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1, 2);
         int level = currentLevel.get(p.getUniqueId()) - 1;
         //System.out.println(playersCompleted.keySet());

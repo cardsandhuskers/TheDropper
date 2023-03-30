@@ -62,7 +62,7 @@ public class Placeholder extends PlaceholderExpansion {
         }
         if(s.equalsIgnoreCase("level")) {
             if(GameStageHandler.currentLevel != null && GameStageHandler.currentLevel.get(p.getUniqueId()) != null) {
-                return GameStageHandler.currentLevel.get(p.getUniqueId()) - 1 + "/" + numLevels;
+                return GameStageHandler.currentLevel.get(p.getUniqueId()) - 1 + "/" + (numLevels-2);
             } else {
                 return 0 + "/" + 0;
             }
