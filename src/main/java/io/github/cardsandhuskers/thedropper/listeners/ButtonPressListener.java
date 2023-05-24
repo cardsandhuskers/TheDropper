@@ -37,33 +37,43 @@ public class ButtonPressListener implements Listener {
             Material mat = e.getClickedBlock().getType();
             Location loc = e.getClickedBlock().getLocation();
             Player p = e.getPlayer();
-            if(mat == Material.STONE_BUTTON && currentLevel.containsKey(p.getUniqueId()) == true) {
+            if(mat == Material.STONE_BUTTON && currentLevel.containsKey(p.getUniqueId())) {
                 //System.out.println(buttons);
                 int level = currentLevel.get(p.getUniqueId());
-                if(loc.equals(buttons.get(level - 1).getLocation())) {
-                    currentLevel.put(p.getUniqueId(), currentLevel.get(p.getUniqueId()) + 1);
+                try {
+                    if (loc.equals(buttons.get(level - 1).getLocation())) {
+                        currentLevel.put(p.getUniqueId(), currentLevel.get(p.getUniqueId()) + 1);
 
-                    //level indexes from 1
-                    if(level < levels.size() + 1) {
-                        System.out.println(level);
-                        System.out.println(levels.size());
-                        //level is past level and levels indexes from 0, so no + or - necessary
-                        p.teleport(levels.get(level));
-                        givePoints(p);
-                        if (level >= levels.size() - 1) {
-                            p.sendMessage("YOU win");
-                            p.setGameMode(GameMode.SPECTATOR);
+                        //level indexes from 1
+                        if (level < levels.size() + 1) {
+                            //System.out.println(level);
+                            //System.out.println(levels.size());
+                            //level is past level and levels indexes from 0, so no + or - necessary
+                            p.teleport(levels.get(level));
+                            givePoints(p);
+                            if (level >= levels.size() - 1) {
+                                p.sendMessage("YOU win");
+                                p.setGameMode(GameMode.SPECTATOR);
 
-                            if(playersCompleted.get(currentLevel.get(p.getUniqueId()) - 1) == currentLevel.keySet().size()) {
-                                gameStageHandler.endGame();
+                                if (playersCompleted.get(currentLevel.get(p.getUniqueId()) - 1) == currentLevel.keySet().size()) {
+                                    gameStageHandler.endGame();
+                                }
                             }
                         }
                     }
+                } catch (Exception ex) {
+                    plugin.getLogger().severe("Error with button! " + e.getPlayer());
+                    ex.printStackTrace();
                 }
             }
             e.setCancelled(true);
         }
     }
+
+    /**
+     * Handles giving points when a player completes a level
+     * @param p - player to give points to
+     */
     public void givePoints(Player p) {
         p.setHealth(20);
         p.setFoodLevel(20);

@@ -35,26 +35,29 @@ public class GameStageHandler {
     private Countdown gameTimer;
     public static HashMap<Player, Integer> wins;
     public static int numLevels = 0;
-    private String GAME_DESCRIPTION =
-                            ChatColor.STRIKETHROUGH + "----------------------------------------\n" +
-                            StringUtils.center(ChatColor.GOLD + "" + ChatColor.BOLD + "The Dropper", 30) +
-                            ChatColor.BLUE + "" + ChatColor.BOLD + "\nHow To Play:" +
-                            "\nWelcome to the dropper!" +
-                            "\nThere are 15 levels, you will have " + ChatColor.YELLOW + "" + ChatColor.BOLD + 12 + ChatColor.RESET + " minutes to complete as many levels as you can!" +
-                            "\nEach level will have a hidden chest that contains 1 diamond! The first person to find this diamond gets bonus points!" +
-                            "\nMake sure to turn your Render Distance up! At least 16 chunks is recommended if your computer can handle it." +
-                            ChatColor.STRIKETHROUGH + "\n----------------------------------------",
-                    POINTS_DESCRIPTION = ChatColor.STRIKETHROUGH + "----------------------------------------" +
-                            ChatColor.GOLD + "" + ChatColor.BOLD + "\nHow the game is Scored (for each level):" +
-                            "\n1st Place: " + ChatColor.GOLD + (int)(plugin.getConfig().getInt("maxPoints") * multiplier) + ChatColor.RESET + " points" +
-                            "\nWith: -" + ChatColor.GOLD + (int)(plugin.getConfig().getInt("dropOff") * multiplier) + ChatColor.RESET + " point for each player ahead" +
-                            //"\nFor finding a " + ChatColor.AQUA + "" + ChatColor.BOLD + "Diamond" + ChatColor.RESET + ": " +
-                            //ChatColor.GOLD + (int)(plugin.getConfig().getInt("diamondPoints") * multiplier) + ChatColor.RESET + " points" +
-                            ChatColor.STRIKETHROUGH + "\n----------------------------------------";
+    private String GAME_DESCRIPTION, POINTS_DESCRIPTION;
 
     public GameStageHandler(TheDropper plugin) {
         wins = new HashMap<>();
         this.plugin = plugin;
+
+        GAME_DESCRIPTION =
+                ChatColor.STRIKETHROUGH + "----------------------------------------\n" + ChatColor.RESET +
+                        StringUtils.center(ChatColor.GOLD + "" + ChatColor.BOLD + "The Dropper", 30) +
+                        ChatColor.BLUE + "" + ChatColor.BOLD + "\nHow To Play:" +
+                        "\nWelcome to the dropper!" +
+                        "\nThere are 15 levels, you will have " + ChatColor.YELLOW + "" + ChatColor.BOLD + 12 + ChatColor.RESET + " minutes to complete as many levels as you can!" +
+                        "\nEach level will have a hidden chest that contains 1 diamond! The first person to find this diamond gets bonus points!" +
+                        "\nMake sure to turn your Render Distance up! At least 16 chunks is recommended if your computer can handle it." +
+                        ChatColor.STRIKETHROUGH + "\n----------------------------------------";
+                POINTS_DESCRIPTION = ChatColor.STRIKETHROUGH + "----------------------------------------" + ChatColor.RESET +
+                        ChatColor.GOLD + "" + ChatColor.BOLD + "\nHow the game is Scored (for each level):" +
+                        "\n1st Place: " + ChatColor.GOLD + (int)(plugin.getConfig().getInt("maxPoints") * multiplier) + ChatColor.RESET + " points" +
+                        "\nWith: -" + ChatColor.GOLD + (int)(plugin.getConfig().getInt("dropOff") * multiplier) + ChatColor.RESET + " point for each player ahead" +
+                        //"\nFor finding a " + ChatColor.AQUA + "" + ChatColor.BOLD + "Diamond" + ChatColor.RESET + ": " +
+                        //ChatColor.GOLD + (int)(plugin.getConfig().getInt("diamondPoints") * multiplier) + ChatColor.RESET + " points" +
+                        ChatColor.STRIKETHROUGH + "\n----------------------------------------";
+
     }
 
 
@@ -105,7 +108,7 @@ public class GameStageHandler {
         int counter = 1;
         while(plugin.getConfig().getLocation("chests." + counter) != null) {
             Location l = plugin.getConfig().getLocation("chests." + counter);
-            System.out.println(l.getBlock().getType());
+            //System.out.println(l.getBlock().getType());
             if(l.getBlock().getType() == Material.CHEST) {
                 Chest chest = (Chest) l.getBlock().getState();
                 Inventory chestInv = chest.getBlockInventory();

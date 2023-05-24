@@ -1,6 +1,7 @@
 package io.github.cardsandhuskers.thedropper.listeners;
 
 import io.github.cardsandhuskers.thedropper.TheDropper;
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
@@ -38,7 +39,7 @@ public class PlayerJoinListener implements Listener {
                 p.teleport(levels.get(currentLevel.get(p.getUniqueId()) - 1));
             }
         } else {
-            p.setGameMode(GameMode.SPECTATOR);
+            Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, ()->p.setGameMode(GameMode.SPECTATOR), 10L);
         }
     }
 }
