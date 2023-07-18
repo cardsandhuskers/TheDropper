@@ -3,6 +3,7 @@ version: '${project.version}'
 main: io.github.cardsandhuskers.thedropper.TheDropper
 api-version: 1.19
 authors: [ cardsandhuskers ]
+softdepend: [Multiverse-Core]
 description: the dropper game plugin
 depend: [PlaceholderAPI, Teams]
 commands:
