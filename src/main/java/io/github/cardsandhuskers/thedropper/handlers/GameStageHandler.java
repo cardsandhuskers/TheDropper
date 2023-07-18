@@ -3,10 +3,7 @@ package io.github.cardsandhuskers.thedropper.handlers;
 import io.github.cardsandhuskers.teams.objects.Team;
 import io.github.cardsandhuskers.teams.objects.TempPointsHolder;
 import io.github.cardsandhuskers.thedropper.TheDropper;
-import io.github.cardsandhuskers.thedropper.listeners.ButtonPressListener;
-import io.github.cardsandhuskers.thedropper.listeners.ItemClickListener;
-import io.github.cardsandhuskers.thedropper.listeners.PlayerDamageListener;
-import io.github.cardsandhuskers.thedropper.listeners.PlayerJoinListener;
+import io.github.cardsandhuskers.thedropper.listeners.*;
 import io.github.cardsandhuskers.thedropper.objects.Countdown;
 import org.apache.commons.lang3.StringUtils;
 import org.bukkit.*;
@@ -33,6 +30,7 @@ public class GameStageHandler {
     private ArrayList<Block> buttons;
     private TheDropper plugin;
     private Countdown gameTimer;
+    private LevelSkipHandler levelSkipHandler;
     public static HashMap<Player, Integer> wins;
     public static int numLevels = 0;
     private String GAME_DESCRIPTION, POINTS_DESCRIPTION;
@@ -41,15 +39,6 @@ public class GameStageHandler {
         wins = new HashMap<>();
         this.plugin = plugin;
 
-        GAME_DESCRIPTION =
-                ChatColor.STRIKETHROUGH + "----------------------------------------\n" + ChatColor.RESET +
-                        StringUtils.center(ChatColor.GOLD + "" + ChatColor.BOLD + "The Dropper", 30) +
-                        ChatColor.BLUE + "" + ChatColor.BOLD + "\nHow To Play:" +
-                        "\nWelcome to the dropper!" +
-                        "\nThere are 15 levels, you will have " + ChatColor.YELLOW + "" + ChatColor.BOLD + 12 + ChatColor.RESET + " minutes to complete as many levels as you can!" +
-                        "\nEach level will have a hidden chest that contains 1 diamond! The first person to find this diamond gets bonus points!" +
-                        "\nMake sure to turn your Render Distance up! At least 16 chunks is recommended if your computer can handle it." +
-                        ChatColor.STRIKETHROUGH + "\n----------------------------------------";
                 POINTS_DESCRIPTION = ChatColor.STRIKETHROUGH + "----------------------------------------" + ChatColor.RESET +
                         ChatColor.GOLD + "" + ChatColor.BOLD + "\nHow the game is Scored (for each level):" +
                         "\n1st Place: " + ChatColor.GOLD + (int)(plugin.getConfig().getInt("maxPoints") * multiplier) + ChatColor.RESET + " points" +
@@ -139,10 +128,24 @@ public class GameStageHandler {
             counter++;
         }
 
+        levelSkipHandler = new LevelSkipHandler(levels);
+
         plugin.getServer().getPluginManager().registerEvents(new PlayerDamageListener(levels), plugin);
         plugin.getServer().getPluginManager().registerEvents(new ButtonPressListener(playersCompleted, buttons, levels, this), plugin);
-        plugin.getServer().getPluginManager().registerEvents(new PlayerJoinListener(plugin, levels), plugin);
+        plugin.getServer().getPluginManager().registerEvents(new PlayerJoinListener(plugin, levels, levelSkipHandler), plugin);
         plugin.getServer().getPluginManager().registerEvents(new ItemClickListener(), plugin);
+        plugin.getServer().getPluginManager().registerEvents(new PlayerClickListener(levelSkipHandler), plugin);
+
+
+        GAME_DESCRIPTION =
+                ChatColor.STRIKETHROUGH + "----------------------------------------\n" + ChatColor.RESET +
+                        StringUtils.center(ChatColor.GOLD + "" + ChatColor.BOLD + "The Dropper", 30) +
+                        ChatColor.BLUE + "" + ChatColor.BOLD + "\nHow To Play:" +
+                        "\nWelcome to the dropper!" +
+                        "\nThere are " + numLevels + " levels, you will have " + ChatColor.YELLOW + "" + ChatColor.BOLD + 12 + ChatColor.RESET + " minutes to complete as many levels as you can!" +
+                        "\nEach level will have a hidden chest that contains 1 diamond! The first person to find this diamond gets bonus points!" +
+                        "\nMake sure to turn your Render Distance up! At least 16 chunks is recommended if your computer can handle it." +
+                        ChatColor.STRIKETHROUGH + "\n----------------------------------------";
 
         pregameCountdown();
     }
@@ -173,6 +176,8 @@ public class GameStageHandler {
                         p.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, 18000, 1));
                     }
                     TheDropper.timeVar = 0;
+                    levelSkipHandler.giveSkips();
+
                     gameTimer();
 
                 },

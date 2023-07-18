@@ -135,4 +135,23 @@ public class ButtonPressListener implements Listener {
             playersCompleted.put(level, playersCompleted.get(level) + 1);
         }
     }
+
+    private boolean isButton(Material mat) {
+        switch(mat) {
+            case STONE_BUTTON:
+            case ACACIA_BUTTON:
+            case BAMBOO_BUTTON:
+            case BIRCH_BUTTON:
+            case CRIMSON_BUTTON:
+            case DARK_OAK_BUTTON:
+            case JUNGLE_BUTTON:
+            case MANGROVE_BUTTON:
+            case OAK_BUTTON:
+            case SPRUCE_BUTTON:
+            case WARPED_BUTTON:
+            case POLISHED_BLACKSTONE_BUTTON:
+            return true;
+            default: return false;
+        }
+    }
 }

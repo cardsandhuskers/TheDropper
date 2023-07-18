@@ -1,6 +1,7 @@
 package io.github.cardsandhuskers.thedropper.listeners;
 
 import io.github.cardsandhuskers.thedropper.TheDropper;
+import io.github.cardsandhuskers.thedropper.handlers.LevelSkipHandler;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -12,16 +13,19 @@ import org.bukkit.event.player.PlayerJoinEvent;
 
 import java.util.ArrayList;
 
+import static io.github.cardsandhuskers.thedropper.TheDropper.gameState;
 import static io.github.cardsandhuskers.thedropper.TheDropper.handler;
 import static io.github.cardsandhuskers.thedropper.handlers.GameStageHandler.currentLevel;
 
 public class PlayerJoinListener implements Listener {
     private TheDropper plugin;
     private ArrayList<Location> levels;
+    private LevelSkipHandler levelSkipHandler;
 
-    public PlayerJoinListener(TheDropper plugin, ArrayList<Location> levels) {
+    public PlayerJoinListener(TheDropper plugin, ArrayList<Location> levels, LevelSkipHandler levelSkipHandler) {
         this.plugin = plugin;
         this.levels = levels;
+        this.levelSkipHandler = levelSkipHandler;
 
     }
 
@@ -38,6 +42,11 @@ public class PlayerJoinListener implements Listener {
                 currentLevel.put(p.getUniqueId(), 1);
                 p.teleport(levels.get(currentLevel.get(p.getUniqueId()) - 1));
             }
+
+            if(gameState == TheDropper.State.GAME_IN_PROGRESS) {
+                levelSkipHandler.giveSkip(p);
+            }
+
         } else {
             Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, ()->p.setGameMode(GameMode.SPECTATOR), 10L);
         }
