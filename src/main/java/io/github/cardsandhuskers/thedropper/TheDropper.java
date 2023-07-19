@@ -40,10 +40,15 @@ public final class TheDropper extends JavaPlugin {
         // Plugin startup logic
         getCommand("setDropperButton").setExecutor(new SaveButtonLocationCommand(this));
         getCommand("setDropperLevelSpawn").setExecutor(new SaveLevelSpawnPointCommand(this));
-        getCommand("startDropper").setExecutor(new StartGameCommand(this));
+
+        StartGameCommand startGameCommand = new StartGameCommand(this);
+        getCommand("startDropper").setExecutor(startGameCommand);
         getCommand("setDropperSpawn").setExecutor(new SetWorldSpawnCommand(this));
         getCommand("setDropperLobby").setExecutor(new SetLobbyCommand(this));
         getCommand("setDropperDiamondChest").setExecutor(new SaveChestLocationCommand(this));
+
+        getCommand("cancelDropper").setExecutor(new CancelGameCommand(this, startGameCommand));
+        getCommand("reloadDropper").setExecutor(new ReloadConfigCommand(this));
 
 
         saveDefaultConfig();

@@ -1,10 +1,10 @@
 package io.github.cardsandhuskers.thedropper.handlers;
 
 import io.github.cardsandhuskers.teams.objects.Team;
-import io.github.cardsandhuskers.teams.objects.TempPointsHolder;
 import io.github.cardsandhuskers.thedropper.TheDropper;
 import io.github.cardsandhuskers.thedropper.listeners.*;
 import io.github.cardsandhuskers.thedropper.objects.Countdown;
+import io.github.cardsandhuskers.thedropper.objects.GameMessages;
 import org.apache.commons.lang3.StringUtils;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -29,23 +29,16 @@ public class GameStageHandler {
     private ArrayList<Location> levels;
     private ArrayList<Block> buttons;
     private TheDropper plugin;
-    private Countdown gameTimer;
+    private Countdown pregameTimer, gameTimer, gameEndTimer;
     private LevelSkipHandler levelSkipHandler;
     public static HashMap<Player, Integer> wins;
     public static int numLevels = 0;
-    private String GAME_DESCRIPTION, POINTS_DESCRIPTION;
 
     public GameStageHandler(TheDropper plugin) {
         wins = new HashMap<>();
         this.plugin = plugin;
 
-                POINTS_DESCRIPTION = ChatColor.STRIKETHROUGH + "----------------------------------------" + ChatColor.RESET +
-                        ChatColor.GOLD + "" + ChatColor.BOLD + "\nHow the game is Scored (for each level):" +
-                        "\n1st Place: " + ChatColor.GOLD + (int)(plugin.getConfig().getInt("maxPoints") * multiplier) + ChatColor.RESET + " points" +
-                        "\nWith: -" + ChatColor.GOLD + (int)(plugin.getConfig().getInt("dropOff") * multiplier) + ChatColor.RESET + " point for each player ahead" +
-                        //"\nFor finding a " + ChatColor.AQUA + "" + ChatColor.BOLD + "Diamond" + ChatColor.RESET + ": " +
-                        //ChatColor.GOLD + (int)(plugin.getConfig().getInt("diamondPoints") * multiplier) + ChatColor.RESET + " points" +
-                        ChatColor.STRIKETHROUGH + "\n----------------------------------------";
+
 
     }
 
@@ -128,7 +121,7 @@ public class GameStageHandler {
             counter++;
         }
 
-        levelSkipHandler = new LevelSkipHandler(levels);
+        levelSkipHandler = new LevelSkipHandler(levels, plugin);
 
         plugin.getServer().getPluginManager().registerEvents(new PlayerDamageListener(levels), plugin);
         plugin.getServer().getPluginManager().registerEvents(new ButtonPressListener(playersCompleted, buttons, levels, this), plugin);
@@ -137,15 +130,7 @@ public class GameStageHandler {
         plugin.getServer().getPluginManager().registerEvents(new PlayerClickListener(levelSkipHandler), plugin);
 
 
-        GAME_DESCRIPTION =
-                ChatColor.STRIKETHROUGH + "----------------------------------------\n" + ChatColor.RESET +
-                        StringUtils.center(ChatColor.GOLD + "" + ChatColor.BOLD + "The Dropper", 30) +
-                        ChatColor.BLUE + "" + ChatColor.BOLD + "\nHow To Play:" +
-                        "\nWelcome to the dropper!" +
-                        "\nThere are " + numLevels + " levels, you will have " + ChatColor.YELLOW + "" + ChatColor.BOLD + 12 + ChatColor.RESET + " minutes to complete as many levels as you can!" +
-                        "\nEach level will have a hidden chest that contains 1 diamond! The first person to find this diamond gets bonus points!" +
-                        "\nMake sure to turn your Render Distance up! At least 16 chunks is recommended if your computer can handle it." +
-                        ChatColor.STRIKETHROUGH + "\n----------------------------------------";
+
 
         pregameCountdown();
     }
@@ -154,7 +139,7 @@ public class GameStageHandler {
      * Pregame countdown timer
      */
     public void pregameCountdown() {
-        Countdown pregameTimer = new Countdown((JavaPlugin)plugin,
+        pregameTimer = new Countdown((JavaPlugin)plugin,
                 //should be 60
                 plugin.getConfig().getInt("PregameTime"),
                 //Timer Start
@@ -184,8 +169,8 @@ public class GameStageHandler {
 
                 //Each Second
                 (t) -> {
-                    if(t.getSecondsLeft() == t.getTotalSeconds() - 2) Bukkit.broadcastMessage(GAME_DESCRIPTION);
-                    if(t.getSecondsLeft() == t.getTotalSeconds() - 12) Bukkit.broadcastMessage(POINTS_DESCRIPTION);
+                    if(t.getSecondsLeft() == t.getTotalSeconds() - 2) Bukkit.broadcastMessage(GameMessages.gameDescription(numLevels));
+                    if(t.getSecondsLeft() == t.getTotalSeconds() - 12) Bukkit.broadcastMessage(GameMessages.pointsDescription(plugin));
 
                     TheDropper.timeVar = t.getSecondsLeft();
                     if(t.getSecondsLeft() <= 4) {
@@ -266,7 +251,7 @@ public class GameStageHandler {
             t.setOption(org.bukkit.scoreboard.Team.Option.COLLISION_RULE, org.bukkit.scoreboard.Team.OptionStatus.ALWAYS);
         }
 
-        Countdown gameEndTimer = new Countdown((JavaPlugin)plugin,
+        gameEndTimer = new Countdown((JavaPlugin)plugin,
                 //should be 60
                 plugin.getConfig().getInt("PostgameTime"),
                 //Timer Start
@@ -313,77 +298,9 @@ public class GameStageHandler {
                 (t) -> {
                     TheDropper.timeVar = t.getSecondsLeft();
 
-                    if(t.getSecondsLeft() == t.getTotalSeconds() - 1) {
-                        ArrayList<TempPointsHolder> tempPointsList = new ArrayList<>();
-                        for(Team team: handler.getTeams()) {
-                            for(Player p:team.getOnlinePlayers()) {
-                                tempPointsList.add(team.getPlayerTempPoints(p));
-                                p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1, 1);
-                            }
-                        }
-
-                        Collections.sort(tempPointsList, Comparator.comparing(TempPointsHolder::getPoints));
-                        Collections.reverse(tempPointsList);
-
-                        int max;
-                        if(tempPointsList.size() >= 5) {
-                            max = 4;
-                        } else {
-                            max = tempPointsList.size() - 1;
-                        }
-
-                        Bukkit.broadcastMessage("\n" + ChatColor.RED + "" + ChatColor.BOLD + "Top 5 Players:");
-                        Bukkit.broadcastMessage(ChatColor.DARK_RED + "------------------------------");
-                        int number = 1;
-                        for(int i = 0; i <= max; i++) {
-                            TempPointsHolder h = tempPointsList.get(i);
-                            Bukkit.broadcastMessage(number + ". " + handler.getPlayerTeam(h.getPlayer()).color + h.getPlayer().getName() + ChatColor.RESET + "    Points: " +  h.getPoints());
-                            number++;
-                        }
-                        Bukkit.broadcastMessage(ChatColor.DARK_RED + "------------------------------");
-                    }
-
-                    if(t.getSecondsLeft() == t.getTotalSeconds() - 6) {
-                        for (Team team : handler.getTeams()) {
-                            ArrayList<TempPointsHolder> tempPointsList = new ArrayList<>();
-                            for (Player p : team.getOnlinePlayers()) {
-                                if (team.getPlayerTempPoints(p) != null) {
-                                    tempPointsList.add(team.getPlayerTempPoints(p));
-                                }
-                            }
-                            Collections.sort(tempPointsList, Comparator.comparing(TempPointsHolder::getPoints));
-                            Collections.reverse(tempPointsList);
-
-                            for (Player p : team.getOnlinePlayers()) {
-                                p.sendMessage(ChatColor.DARK_AQUA + "" + ChatColor.BOLD + "Your Team Standings:");
-                                p.sendMessage(ChatColor.DARK_BLUE + "------------------------------");
-                                int number = 1;
-                                for (TempPointsHolder h : tempPointsList) {
-                                    p.sendMessage(number + ". " + handler.getPlayerTeam(p).color + h.getPlayer().getName() + ChatColor.RESET + "    Points: " + h.getPoints());
-                                    number++;
-                                }
-                                p.sendMessage(ChatColor.DARK_BLUE + "------------------------------\n");
-                                p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1, 1);
-                            }
-                        }
-                    }
-                    if(t.getSecondsLeft() == t.getTotalSeconds() - 11) {
-                        ArrayList<Team> teamList = handler.getTeams();
-                        Collections.sort(teamList, Comparator.comparing(Team::getTempPoints));
-                        Collections.reverse(teamList);
-
-                        Bukkit.broadcastMessage(ChatColor.BLUE + "" + ChatColor.BOLD + "Team Leaderboard:");
-                        Bukkit.broadcastMessage(ChatColor.GREEN + "------------------------------");
-                        int counter = 1;
-                        for(Team team:teamList) {
-                            Bukkit.broadcastMessage(counter + ". " + team.color + ChatColor.BOLD +  team.getTeamName() + ChatColor.RESET + " Points: " + team.getTempPoints());
-                            counter++;
-                        }
-                        Bukkit.broadcastMessage(ChatColor.GREEN + "------------------------------");
-                        for(Player p: Bukkit.getOnlinePlayers()) {
-                            p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1, 1);
-                        }
-                    }
+                    if(t.getSecondsLeft() == t.getTotalSeconds() - 1) GameMessages.announceTopPlayers();
+                    if(t.getSecondsLeft() == t.getTotalSeconds() - 6) GameMessages.announceTeamPlayers();
+                    if(t.getSecondsLeft() == t.getTotalSeconds() - 11) GameMessages.announceTeamLeaderboard();
                 }
         );
 
@@ -393,4 +310,21 @@ public class GameStageHandler {
 
     }
 
+    public boolean cancelTimers() {
+        boolean cancel = false;
+
+        if(pregameTimer != null) {
+            pregameTimer.cancelTimer();
+            cancel = true;
+        }
+        if(gameTimer != null) {
+            gameTimer.cancelTimer();
+            cancel = true;
+        }
+        if(gameEndTimer != null) {
+            gameEndTimer.cancelTimer();
+            cancel = true;
+        }
+        return cancel;
+    }
 }

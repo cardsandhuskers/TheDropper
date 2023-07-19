@@ -1,10 +1,8 @@
 package io.github.cardsandhuskers.thedropper.handlers;
 
 import io.github.cardsandhuskers.teams.objects.Team;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
+import io.github.cardsandhuskers.thedropper.TheDropper;
+import org.bukkit.*;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -23,9 +21,11 @@ public class LevelSkipHandler {
     //stored as hasSkip (starts true)
     public HashMap<OfflinePlayer, Boolean> levelSkipMap;
     private ArrayList<Location> levels;
+    private TheDropper plugin;
 
-    public LevelSkipHandler(ArrayList<Location> levels) {
+    public LevelSkipHandler(ArrayList<Location> levels,TheDropper plugin) {
         this.levels = levels;
+        this.plugin = plugin;
         buildMap();
     }
     public void buildMap() {
@@ -78,6 +78,10 @@ public class LevelSkipHandler {
                 inv.remove(Material.GOLD_BLOCK);
 
                 p.sendMessage(ChatColor.YELLOW + "You skipped level " + (currentLevel.get(p.getUniqueId()) - 1));
+
+                p.setInvulnerable(true);
+                Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, ()->p.setInvulnerable(false), 2L);
+
 
             } else {
                 levelSkipMap.put((OfflinePlayer) p, true);

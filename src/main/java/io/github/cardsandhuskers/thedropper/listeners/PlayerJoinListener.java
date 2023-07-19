@@ -35,7 +35,7 @@ public class PlayerJoinListener implements Listener {
         p.teleport(plugin.getConfig().getLocation("spawn"));
         if(handler.getPlayerTeam(p) != null) {
             p.setGameMode(GameMode.ADVENTURE);
-            System.out.println(currentLevel.keySet());
+            //System.out.println(currentLevel.keySet());
             if(currentLevel.containsKey(p.getUniqueId())) {
                 p.teleport(levels.get(currentLevel.get(p.getUniqueId()) - 1));
             } else {

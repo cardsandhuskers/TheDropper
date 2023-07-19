@@ -25,3 +25,9 @@ commands:
   setDropperDiamondChest:
     description: sets the location for a chest
     usage: /<command> [level]
+  reloadDropper:
+    description: reloads config for the dropper
+    usage: /<command>
+  cancelDropper:
+    description: cancels the dropper
+    usage: /<command>

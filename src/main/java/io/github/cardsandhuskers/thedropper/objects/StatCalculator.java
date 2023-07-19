@@ -68,8 +68,8 @@ public class StatCalculator {
 
 
     public void saveRecords() throws IOException {
-        for(Player p:wins.keySet()) if(p != null) System.out.println(p.getDisplayName() + ": " + wins.get(p));
-        System.out.println("~~~~~~~~~~~~~~~");
+        //for(Player p:wins.keySet()) if(p != null) System.out.println(p.getDisplayName() + ": " + wins.get(p));
+        //System.out.println("~~~~~~~~~~~~~~~");
 
         FileWriter writer = new FileWriter("plugins/TheDropper/stats.csv", true);
         FileReader reader = new FileReader("plugins/TheDropper/stats.csv");

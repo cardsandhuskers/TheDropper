@@ -11,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class StartGameCommand implements CommandExecutor {
     TheDropper plugin;
+    private GameStageHandler gameStageHandler;
     public StartGameCommand(TheDropper plugin) {
         this.plugin = plugin;
     }
@@ -44,10 +45,12 @@ public class StartGameCommand implements CommandExecutor {
     }
 
     public void startGame() {
-        GameStageHandler gameStageHandler = new GameStageHandler(plugin);
+        gameStageHandler = new GameStageHandler(plugin);
         gameStageHandler.start();
+    }
 
-
-
+    public boolean cancelTimers() {
+        if(gameStageHandler == null) return false;
+        return gameStageHandler.cancelTimers();
     }
 }
