@@ -7,4 +7,7 @@ maxPoints: 25
 #subtract this from 25 for each player ahead
 dropOff: 1
 #given for finding a diamond
+
+#how many fails to award a skip
+skipFails: 20
 diamondPoints: 25

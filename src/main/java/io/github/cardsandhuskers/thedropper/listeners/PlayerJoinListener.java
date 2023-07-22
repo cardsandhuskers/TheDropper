@@ -44,7 +44,6 @@ public class PlayerJoinListener implements Listener {
             }
 
             if(gameState == TheDropper.State.GAME_IN_PROGRESS) {
-                levelSkipHandler.giveSkip(p);
             }
 
         } else {

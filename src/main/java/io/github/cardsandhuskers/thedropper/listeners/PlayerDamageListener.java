@@ -1,5 +1,7 @@
 package io.github.cardsandhuskers.thedropper.listeners;
 
+import io.github.cardsandhuskers.thedropper.TheDropper;
+import io.github.cardsandhuskers.thedropper.handlers.LevelSkipHandler;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Sound;
@@ -16,9 +18,16 @@ import static io.github.cardsandhuskers.thedropper.handlers.GameStageHandler.cur
 
 public class PlayerDamageListener implements Listener {
     private ArrayList<Location> levels;
+    private HashMap<Player, Integer> levelFails, totalFails;
+    private LevelSkipHandler levelSkipHandler;
+    private TheDropper plugin;
 
-    public PlayerDamageListener(ArrayList<Location> levels) {
+    public PlayerDamageListener(TheDropper plugin, ArrayList<Location> levels, HashMap levelFails, HashMap totalFails, LevelSkipHandler levelSkipHandler) {
         this.levels = levels;
+        this.levelFails = levelFails;
+        this.totalFails = totalFails;
+        this.levelSkipHandler = levelSkipHandler;
+        this.plugin = plugin;
     }
 
     @EventHandler
@@ -34,6 +43,18 @@ public class PlayerDamageListener implements Listener {
                 p.setSaturation(20);
                 p.setFireTicks(0);
                 p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_DIDGERIDOO, 1, 1);
+
+                if(levelFails.containsKey(p)) {
+                    levelFails.put(p, levelFails.get(p) + 1);
+                    totalFails.put(p, totalFails.get(p) + 1);
+                } else {
+                    levelFails.put(p, 1);
+                    totalFails.put(p, 1);
+                }
+
+                if(levelFails.get(p) >= plugin.getConfig().getInt("skipFails")) {
+                    levelSkipHandler.giveSkip(p);
+                }
             }
         }
     }

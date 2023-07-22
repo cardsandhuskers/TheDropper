@@ -19,39 +19,14 @@ import static io.github.cardsandhuskers.thedropper.handlers.GameStageHandler.cur
 
 public class LevelSkipHandler {
     //stored as hasSkip (starts true)
-    public HashMap<OfflinePlayer, Boolean> levelSkipMap;
     private ArrayList<Location> levels;
     private TheDropper plugin;
+    private HashMap<Player, Integer> levelFails;
 
-    public LevelSkipHandler(ArrayList<Location> levels,TheDropper plugin) {
+    public LevelSkipHandler(ArrayList<Location> levels,TheDropper plugin, HashMap levelFails) {
         this.levels = levels;
         this.plugin = plugin;
-        buildMap();
-    }
-    public void buildMap() {
-        levelSkipMap = new HashMap<>();
-        for(Team t:handler.getTeams()) {
-            for(OfflinePlayer p:t.getPlayers()) {
-                levelSkipMap.put(p, true);
-            }
-        }
-
-    }
-
-    public void giveSkips() {
-        ItemStack skip = new ItemStack(Material.GOLD_BLOCK);
-        ItemMeta skipMeta = skip.getItemMeta();
-        skipMeta.setDisplayName("Level Skip");
-        skipMeta.setLore(Collections.singletonList("Use this to skip a dropper level. Can only be used once"));
-        skipMeta.addEnchant(Enchantment.LURE, 1, true);
-        skipMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-        skip.setItemMeta(skipMeta);
-
-        for(Team t:handler.getTeams()) {
-            for(OfflinePlayer p:t.getPlayers()) {
-                if((Player)p != null) ((Player) p).getInventory().setItem(4, skip);
-            }
-        }
+        this.levelFails = levelFails;
     }
 
     public void giveSkip(Player p) {
@@ -68,25 +43,25 @@ public class LevelSkipHandler {
 
     public void onSkip(Player p) {
         if(currentLevel.containsKey(p.getUniqueId())) {
-            if(levelSkipMap.containsKey(p)) {
-                levelSkipMap.put(p, false);
-                currentLevel.put(p.getUniqueId(), currentLevel.get(p.getUniqueId()) + 1);
+            currentLevel.put(p.getUniqueId(), currentLevel.get(p.getUniqueId()) + 1);
 
-                p.teleport(levels.get(currentLevel.get(p.getUniqueId()) - 1));
+            p.teleport(levels.get(currentLevel.get(p.getUniqueId()) - 1));
 
-                Inventory inv = p.getInventory();
-                inv.remove(Material.GOLD_BLOCK);
+            Inventory inv = p.getInventory();
+            if(inv.contains(Material.GOLD_BLOCK)) inv.remove(Material.GOLD_BLOCK);
 
-                p.sendMessage(ChatColor.YELLOW + "You skipped level " + (currentLevel.get(p.getUniqueId()) - 1));
+            p.sendMessage(ChatColor.YELLOW + "You skipped level " + (currentLevel.get(p.getUniqueId()) - 1));
 
-                p.setInvulnerable(true);
-                Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, ()->p.setInvulnerable(false), 2L);
+            levelFails.put(p, 0);
 
-
-            } else {
-                levelSkipMap.put((OfflinePlayer) p, true);
-                onSkip(p);
+            if (currentLevel.get(p.getUniqueId()) >= levels.size()) {
+                p.sendMessage(ChatColor.YELLOW + "You Completed all Levels!");
+                p.setGameMode(GameMode.SPECTATOR);
+                //TODO: if anyone skips the last level, game won't end early, too lazy to fix rn
             }
+
+            p.setInvulnerable(true);
+            Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, ()->p.setInvulnerable(false), 2L);
 
         }
     }

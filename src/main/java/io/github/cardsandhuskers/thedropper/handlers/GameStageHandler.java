@@ -76,14 +76,16 @@ public class GameStageHandler {
             }
         }
 
-
+        //Gamerules
+        for(org.bukkit.scoreboard.Team t:Bukkit.getScoreboardManager().getMainScoreboard().getTeams()) {
+            t.setOption(org.bukkit.scoreboard.Team.Option.COLLISION_RULE, org.bukkit.scoreboard.Team.OptionStatus.NEVER);
+        }
         World world = plugin.getConfig().getLocation("spawn").getWorld();
         world.setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false);
         world.setGameRule(GameRule.DO_MOB_SPAWNING, false);
         world.setGameRule(GameRule.DO_TRADER_SPAWNING, false);
-        for(org.bukkit.scoreboard.Team t:Bukkit.getScoreboardManager().getMainScoreboard().getTeams()) {
-            t.setOption(org.bukkit.scoreboard.Team.Option.COLLISION_RULE, org.bukkit.scoreboard.Team.OptionStatus.ALWAYS);
-        }
+        world.setGameRule(GameRule.KEEP_INVENTORY, true);
+        world.setGameRule(GameRule.DO_WEATHER_CYCLE, false);
 
 
         //fill chests
@@ -120,11 +122,20 @@ public class GameStageHandler {
             playersCompleted.put(counter, 0);
             counter++;
         }
+        HashMap<Player, Integer> totalFails = new HashMap<>();
+        HashMap<Player, Integer> levelFails = new HashMap<>();
 
-        levelSkipHandler = new LevelSkipHandler(levels, plugin);
+        for(Team t: handler.getTeams()) {
+            for(Player p:t.getOnlinePlayers()) {
+                totalFails.put(p, 0);
+                levelFails.put(p, 0);
+            }
+        }
 
-        plugin.getServer().getPluginManager().registerEvents(new PlayerDamageListener(levels), plugin);
-        plugin.getServer().getPluginManager().registerEvents(new ButtonPressListener(playersCompleted, buttons, levels, this), plugin);
+        levelSkipHandler = new LevelSkipHandler(levels, plugin, levelFails);
+
+        plugin.getServer().getPluginManager().registerEvents(new PlayerDamageListener(plugin, levels, levelFails, totalFails, levelSkipHandler), plugin);
+        plugin.getServer().getPluginManager().registerEvents(new ButtonPressListener(playersCompleted, buttons, levels, this, levelFails), plugin);
         plugin.getServer().getPluginManager().registerEvents(new PlayerJoinListener(plugin, levels, levelSkipHandler), plugin);
         plugin.getServer().getPluginManager().registerEvents(new ItemClickListener(), plugin);
         plugin.getServer().getPluginManager().registerEvents(new PlayerClickListener(levelSkipHandler), plugin);
@@ -161,7 +172,6 @@ public class GameStageHandler {
                         p.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, 18000, 1));
                     }
                     TheDropper.timeVar = 0;
-                    levelSkipHandler.giveSkips();
 
                     gameTimer();
 
@@ -169,7 +179,7 @@ public class GameStageHandler {
 
                 //Each Second
                 (t) -> {
-                    if(t.getSecondsLeft() == t.getTotalSeconds() - 2) Bukkit.broadcastMessage(GameMessages.gameDescription(numLevels));
+                    if(t.getSecondsLeft() == t.getTotalSeconds() - 2) Bukkit.broadcastMessage(GameMessages.gameDescription(numLevels, plugin));
                     if(t.getSecondsLeft() == t.getTotalSeconds() - 12) Bukkit.broadcastMessage(GameMessages.pointsDescription(plugin));
 
                     TheDropper.timeVar = t.getSecondsLeft();
@@ -248,7 +258,7 @@ public class GameStageHandler {
         }
         HandlerList.unregisterAll(plugin);
         for(org.bukkit.scoreboard.Team t:Bukkit.getScoreboardManager().getMainScoreboard().getTeams()) {
-            t.setOption(org.bukkit.scoreboard.Team.Option.COLLISION_RULE, org.bukkit.scoreboard.Team.OptionStatus.ALWAYS);
+            t.setOption(org.bukkit.scoreboard.Team.Option.COLLISION_RULE, org.bukkit.scoreboard.Team.OptionStatus.NEVER);
         }
 
         gameEndTimer = new Countdown((JavaPlugin)plugin,

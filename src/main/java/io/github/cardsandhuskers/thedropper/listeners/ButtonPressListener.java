@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.potion.PotionEffect;
 
 import java.util.ArrayList;
@@ -22,12 +23,14 @@ public class ButtonPressListener implements Listener {
     private ArrayList<Location> levels;
     private ArrayList<Block> buttons;
     private GameStageHandler gameStageHandler;
+    private HashMap<Player, Integer> levelFails;
     private TheDropper plugin = (TheDropper) Bukkit.getPluginManager().getPlugin("TheDropper");
-    public ButtonPressListener(HashMap<Integer, Integer> playersCompleted, ArrayList<Block> buttons, ArrayList<Location> levels, GameStageHandler gameStageHandler) {
+    public ButtonPressListener(HashMap<Integer, Integer> playersCompleted, ArrayList<Block> buttons, ArrayList<Location> levels, GameStageHandler gameStageHandler, HashMap levelFails) {
         this.playersCompleted = playersCompleted;
         this.levels = levels;
         this.buttons = buttons;
         this.gameStageHandler = gameStageHandler;
+        this.levelFails = levelFails;
     }
 
     @EventHandler
@@ -51,8 +54,16 @@ public class ButtonPressListener implements Listener {
                             //level is past level and levels indexes from 0, so no + or - necessary
                             p.teleport(levels.get(level));
                             givePoints(p);
+                            //new level, reset level fails
+                            if(levelFails.containsKey(p)) {
+                                levelFails.put(p, 0);
+                            }
+
+                            Inventory inv = p.getInventory();
+                            if(inv.contains(Material.GOLD_BLOCK)) inv.remove(Material.GOLD_BLOCK);
+
                             if (level >= levels.size() - 1) {
-                                p.sendMessage("YOU win");
+                                p.sendMessage(ChatColor.YELLOW + "You Completed all Levels!");
                                 p.setGameMode(GameMode.SPECTATOR);
 
                                 if (playersCompleted.get(currentLevel.get(p.getUniqueId()) - 1) == currentLevel.keySet().size()) {
@@ -99,36 +110,25 @@ public class ButtonPressListener implements Listener {
 
 
             for (Player player : Bukkit.getOnlinePlayers()) {
-                if (player.equals(p)) {
-                    switch(numCompleted) {
-                        case 0:
-                            p.sendMessage(ChatColor.GREEN + "You finished level " + ChatColor.YELLOW + level + ChatColor.GREEN + " in " + ChatColor.YELLOW + ChatColor.BOLD + "1" + ChatColor.RESET + ChatColor.GREEN + "st place [" + ChatColor.YELLOW + ChatColor.BOLD + "+" + points + ChatColor.RESET + ChatColor.GREEN + "] points");
-                            break;
-                        case 1:
-                            p.sendMessage(ChatColor.GREEN + "You finished level " + ChatColor.YELLOW + level + ChatColor.GREEN + " in " + ChatColor.YELLOW + ChatColor.BOLD + "2" + ChatColor.RESET + ChatColor.GREEN + "nd place [" + ChatColor.YELLOW + ChatColor.BOLD + "+" + points + ChatColor.RESET + ChatColor.GREEN + "] points");
-                            break;
-                        case 2:
-                            p.sendMessage(ChatColor.GREEN + "You finished level " + ChatColor.YELLOW + level + ChatColor.GREEN + " in " + ChatColor.YELLOW + ChatColor.BOLD + "3" + ChatColor.RESET + ChatColor.GREEN + "rd place [" + ChatColor.YELLOW + ChatColor.BOLD + "+" + points + ChatColor.RESET + ChatColor.GREEN + "] points");
-                            break;
-                        default:
-                            p.sendMessage(ChatColor.GREEN + "You finished level " + ChatColor.YELLOW + level + ChatColor.GREEN + " in " + ChatColor.YELLOW + ChatColor.BOLD + (numCompleted + 1) + ChatColor.RESET + ChatColor.GREEN + "th place [" + ChatColor.YELLOW + ChatColor.BOLD + "+" + points + ChatColor.RESET + ChatColor.GREEN + "] points");
-                    }
-
+                String message;
+                if(player.equals(p)) {
+                    message = "You";
                 } else {
-                    switch(numCompleted) {
-                        case 0:
-                            player.sendMessage(handler.getPlayerTeam(p).color + p.getName() + ChatColor.GREEN + " finished level " + ChatColor.YELLOW + level + ChatColor.GREEN + " in " + ChatColor.YELLOW + ChatColor.BOLD + "1" + ChatColor.RESET + ChatColor.GREEN + "st place");
-                            break;
-                        case 1:
-                            player.sendMessage(handler.getPlayerTeam(p).color + p.getName() + ChatColor.GREEN + " finished level " + ChatColor.YELLOW + level + ChatColor.GREEN + " in " + ChatColor.YELLOW + ChatColor.BOLD + "2" + ChatColor.RESET + ChatColor.GREEN + "nd place");
-                            break;
-                        case 2:
-                            player.sendMessage(handler.getPlayerTeam(p).color + p.getName() + ChatColor.GREEN + " finished level " + ChatColor.YELLOW + level + ChatColor.GREEN + " in " + ChatColor.YELLOW + ChatColor.BOLD + "3" + ChatColor.RESET + ChatColor.GREEN + "rd place");
-                            break;
-                        default:
-                            player.sendMessage(handler.getPlayerTeam(p).color + p.getName() + ChatColor.GREEN + " finished level " + ChatColor.YELLOW + level + ChatColor.GREEN + " in " + ChatColor.YELLOW + ChatColor.BOLD + (numCompleted + 1) + ChatColor.RESET + ChatColor.GREEN + "th place");
-                    }
+                    message = handler.getPlayerTeam(p).color + p.getName();
                 }
+                message += ChatColor.GREEN + " finished level " + ChatColor.YELLOW + level + ChatColor.GREEN + " in " + ChatColor.YELLOW + ChatColor.BOLD;
+
+                if(numCompleted % 10 == 0) {
+                    message += (numCompleted+1) + "st";
+                } else if(numCompleted % 10 == 1) {
+                    message += (numCompleted+1) + "nd";
+                } else if(numCompleted % 10 == 2) {
+                    message += (numCompleted+1) + "rd";
+                } else {
+                    message += (numCompleted+1) + "th";
+                }
+                message += ChatColor.RESET + "" + ChatColor.GREEN + " place [" + ChatColor.YELLOW + "" + ChatColor.BOLD + "+" + points + ChatColor.RESET + ChatColor.GREEN + "] points";
+                player.sendMessage(message);
             }
             t.addTempPoints(p, points);
 

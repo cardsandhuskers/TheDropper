@@ -23,16 +23,17 @@ public class GameMessages {
      * @param numLevels
      * @return String to announce for game rules
      */
-    public static String gameDescription(int numLevels) {
+    public static String gameDescription(int numLevels, TheDropper plugin) {
         String GAME_DESCRIPTION =
                 ChatColor.STRIKETHROUGH + "----------------------------------------\n" + ChatColor.RESET +
                         StringUtils.center(ChatColor.GOLD + "" + ChatColor.BOLD + "The Dropper", 30) +
-                        ChatColor.BLUE + "" + ChatColor.BOLD + "\nHow To Play:" +
+                        ChatColor.BLUE + "" + ChatColor.BOLD + "\nHow To Play:" + ChatColor.RESET +
                         "\nWelcome to the dropper!" +
-                        "\nThere are " + numLevels + " levels, you will have " + ChatColor.YELLOW + "" + ChatColor.BOLD + 12 + ChatColor.RESET + " minutes to complete as many levels as you can!" +
+                        "\nThere are " + ChatColor.YELLOW + "" + ChatColor.BOLD + numLevels + ChatColor.RESET + " levels, " +
+                        "you will have " + ChatColor.YELLOW + "" + ChatColor.BOLD + plugin.getConfig().getInt("GameTime")/60 + ChatColor.RESET + " minutes to complete as many levels as you can!" +
                         //"\nEach level will have a hidden chest that contains 1 diamond! The first person to find this diamond gets bonus points!" +
                         "\nMake sure to turn your Render Distance up! At least 16 chunks is recommended if your computer can handle it." +
-                        "\nYou have 1 " + ChatColor.YELLOW + ChatColor.BOLD + "skip item" + ChatColor.RESET + " that you can use to skip a level. You won't receive any points for the skipped level." +
+                        "\nAfter " + plugin.getConfig().getInt("skipFails") + " fails on a level, you will receive a " + ChatColor.YELLOW + ChatColor.BOLD + "skip item" + ChatColor.RESET + " that you can use to skip a level that's giving you trouble! You won't receive any points for the skipped level though." +
                         ChatColor.STRIKETHROUGH + "\n----------------------------------------";
         return GAME_DESCRIPTION;
     }

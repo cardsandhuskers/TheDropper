@@ -3,9 +3,9 @@ version: '${project.version}'
 main: io.github.cardsandhuskers.thedropper.TheDropper
 api-version: 1.19
 authors: [ cardsandhuskers ]
-softdepend: [Multiverse-Core]
+softdepend: [Multiverse-Core, PlaceholderAPI]
 description: the dropper game plugin
-depend: [PlaceholderAPI, Teams]
+depend: [Teams]
 commands:
   setDropperButton:
     description: sets the location for a button
@@ -29,5 +29,5 @@ commands:
     description: reloads config for the dropper
     usage: /<command>
   cancelDropper:
-    description: cancels the dropper
+    description: cancels the dropper game
     usage: /<command>
