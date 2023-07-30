@@ -23,7 +23,7 @@ public class GameMessages {
      * @param numLevels
      * @return String to announce for game rules
      */
-    public static String gameDescription(int numLevels, TheDropper plugin) {
+    public static String getGameDescription(int numLevels, TheDropper plugin) {
         String GAME_DESCRIPTION =
                 ChatColor.STRIKETHROUGH + "----------------------------------------\n" + ChatColor.RESET +
                         StringUtils.center(ChatColor.GOLD + "" + ChatColor.BOLD + "The Dropper", 30) +
@@ -43,7 +43,7 @@ public class GameMessages {
      * @param plugin
      * @return String to announce for points
      */
-    public static String pointsDescription(TheDropper plugin) {
+    public static String getPointsDescription(TheDropper plugin) {
         String POINTS_DESCRIPTION = ChatColor.STRIKETHROUGH + "----------------------------------------" + ChatColor.RESET +
                 ChatColor.GOLD + "" + ChatColor.BOLD + "\nHow the game is Scored (for each level):" +
                 "\n1st Place: " + ChatColor.GOLD + (int)(plugin.getConfig().getInt("maxPoints") * multiplier) + ChatColor.RESET + " points" +

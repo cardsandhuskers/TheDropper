@@ -5,7 +5,6 @@ import io.github.cardsandhuskers.thedropper.TheDropper;
 import io.github.cardsandhuskers.thedropper.listeners.*;
 import io.github.cardsandhuskers.thedropper.objects.Countdown;
 import io.github.cardsandhuskers.thedropper.objects.GameMessages;
-import org.apache.commons.lang3.StringUtils;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
@@ -179,8 +178,8 @@ public class GameStageHandler {
 
                 //Each Second
                 (t) -> {
-                    if(t.getSecondsLeft() == t.getTotalSeconds() - 2) Bukkit.broadcastMessage(GameMessages.gameDescription(numLevels, plugin));
-                    if(t.getSecondsLeft() == t.getTotalSeconds() - 12) Bukkit.broadcastMessage(GameMessages.pointsDescription(plugin));
+                    if(t.getSecondsLeft() == t.getTotalSeconds() - 2) Bukkit.broadcastMessage(GameMessages.getGameDescription(numLevels, plugin));
+                    if(t.getSecondsLeft() == t.getTotalSeconds() - 12) Bukkit.broadcastMessage(GameMessages.getPointsDescription(plugin));
 
                     TheDropper.timeVar = t.getSecondsLeft();
                     if(t.getSecondsLeft() <= 4) {
