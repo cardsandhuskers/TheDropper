@@ -116,18 +116,22 @@ public class ButtonPressListener implements Listener {
                 } else {
                     message = handler.getPlayerTeam(p).color + p.getName();
                 }
-                message += ChatColor.GREEN + " finished level " + ChatColor.YELLOW + level + ChatColor.GREEN + " in " + ChatColor.YELLOW + ChatColor.BOLD;
+                message += ChatColor.GREEN + " finished level " + ChatColor.YELLOW + level + ChatColor.GREEN + " in " + ChatColor.YELLOW + ChatColor.BOLD + (numCompleted+1);
 
-                if(numCompleted % 10 == 0) {
-                    message += (numCompleted+1) + "st";
+                if(numCompleted == 10 || numCompleted == 11 || numCompleted == 12) {
+                    message += "th";
+                } else if(numCompleted % 10 == 0) {
+                    message += "st";
                 } else if(numCompleted % 10 == 1) {
-                    message += (numCompleted+1) + "nd";
+                    message += "nd";
                 } else if(numCompleted % 10 == 2) {
-                    message += (numCompleted+1) + "rd";
+                    message += "rd";
                 } else {
-                    message += (numCompleted+1) + "th";
+                    message += "th";
                 }
-                message += ChatColor.RESET + "" + ChatColor.GREEN + " place [" + ChatColor.YELLOW + "" + ChatColor.BOLD + "+" + points + ChatColor.RESET + ChatColor.GREEN + "] points";
+                message += ChatColor.RESET + "" + ChatColor.GREEN + " place";
+                if(player.equals(p)) message += " [" + ChatColor.YELLOW + "" + ChatColor.BOLD + "+" + points + ChatColor.RESET + ChatColor.GREEN + "] points";
+
                 player.sendMessage(message);
             }
             t.addTempPoints(p, points);

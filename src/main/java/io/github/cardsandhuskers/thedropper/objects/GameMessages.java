@@ -33,7 +33,8 @@ public class GameMessages {
                         "you will have " + ChatColor.YELLOW + "" + ChatColor.BOLD + plugin.getConfig().getInt("GameTime")/60 + ChatColor.RESET + " minutes to complete as many levels as you can!" +
                         //"\nEach level will have a hidden chest that contains 1 diamond! The first person to find this diamond gets bonus points!" +
                         "\nMake sure to turn your Render Distance up! At least 16 chunks is recommended if your computer can handle it." +
-                        "\nAfter " + plugin.getConfig().getInt("skipFails") + " fails on a level, you will receive a " + ChatColor.YELLOW + ChatColor.BOLD + "skip item" + ChatColor.RESET + " that you can use to skip a level that's giving you trouble! You won't receive any points for the skipped level though." +
+                        "\nAfter " + ChatColor.BOLD + ChatColor.RED + plugin.getConfig().getInt("skipFails") + ChatColor.RESET + " fails on a level, you will receive a " + ChatColor.YELLOW + ChatColor.BOLD + "skip item" +
+                        ChatColor.RESET + " that you can use to skip a level that's giving you trouble! You won't receive any points for the skipped level though." +
                         ChatColor.STRIKETHROUGH + "\n----------------------------------------";
         return GAME_DESCRIPTION;
     }
