@@ -1,5 +1,6 @@
 package io.github.cardsandhuskers.thedropper.handlers;
 
+import io.github.cardsandhuskers.teams.handlers.TeamHandler;
 import io.github.cardsandhuskers.teams.objects.Team;
 import io.github.cardsandhuskers.thedropper.TheDropper;
 import io.github.cardsandhuskers.thedropper.listeners.*;
@@ -12,6 +13,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -32,6 +34,7 @@ public class GameStageHandler {
     private LevelSkipHandler levelSkipHandler;
     public static HashMap<Player, Integer> wins;
     public static int numLevels = 0;
+    private InvisibilityHandler invisibilityHandler;
 
     public GameStageHandler(TheDropper plugin) {
         wins = new HashMap<>();
@@ -206,18 +209,37 @@ public class GameStageHandler {
                 () -> {
                     for(UUID u:currentLevel.keySet()) {
                         Player p = Bukkit.getPlayer(u);
-                        if(p != null) {
-                            if(currentLevel.get(u) <= levels.size()) {
+                        if (p != null) {
+                            if (currentLevel.get(u) <= levels.size()) {
                                 p.teleport(levels.get(currentLevel.get(u) - 1));
                             }
                         }
                     }
+                    invisibilityHandler = new InvisibilityHandler(plugin);
+                    invisibilityHandler.startOperation();
                     gameState = TheDropper.State.GAME_IN_PROGRESS;
+
+                    TeamHandler handler = TeamHandler.getInstance();
+                    for(Team t:handler.getTeams()) {
+                        for(Player p:t.getOnlinePlayers()) {
+                            Team team = handler.getPlayerTeam(p);
+                            ItemStack boots = new ItemStack(Material.LEATHER_BOOTS, 1);
+                            LeatherArmorMeta bootsMeta = (LeatherArmorMeta) boots.getItemMeta();
+                            if(handler.getPlayerTeam(p) != null) {
+                                bootsMeta.setColor(team.translateColor());
+                            }
+                            bootsMeta.setUnbreakable(true);
+                            boots.setItemMeta(bootsMeta);
+                            p.getEquipment().setBoots(boots);
+                        }
+                    }
                 },
 
                 //Timer End
                 () -> {
                     gameEndTimer();
+                    invisibilityHandler.disableInvis();
+                    invisibilityHandler.cancelOperation();
 
                 },
 

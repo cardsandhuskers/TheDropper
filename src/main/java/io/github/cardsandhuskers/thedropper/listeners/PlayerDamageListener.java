@@ -1,5 +1,6 @@
 package io.github.cardsandhuskers.thedropper.listeners;
 
+import io.github.cardsandhuskers.teams.handlers.TeamHandler;
 import io.github.cardsandhuskers.thedropper.TheDropper;
 import io.github.cardsandhuskers.thedropper.handlers.LevelSkipHandler;
 import org.bukkit.Location;
@@ -35,6 +36,13 @@ public class PlayerDamageListener implements Listener {
         if (e.getEntity().getType().equals(EntityType.PLAYER)) {
             Player p = (Player) e.getEntity();
             if(e.getDamage() >= p.getHealth()) {
+                if(!currentLevel.containsKey(p.getUniqueId())) {
+                    if(TeamHandler.getInstance().getPlayerTeam(p) != null) {
+                        currentLevel.put(p.getUniqueId(), 1);
+                    } else {
+                        return;
+                    }
+                }
                 //dead
                 e.setCancelled(true);
                 p.teleport(levels.get(currentLevel.get(p.getUniqueId()) - 1));
