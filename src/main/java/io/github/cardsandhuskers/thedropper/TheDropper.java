@@ -14,6 +14,8 @@ public final class TheDropper extends JavaPlugin {
     public static double multiplier;
     public static State gameState = State.GAME_STARTING;
     public StatCalculator statCalculator;
+
+    
     @Override
     public void onEnable() {
         //Placeholder API validation

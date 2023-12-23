@@ -3,6 +3,9 @@ package io.github.cardsandhuskers.thedropper.listeners;
 import io.github.cardsandhuskers.teams.objects.Team;
 import io.github.cardsandhuskers.thedropper.TheDropper;
 import io.github.cardsandhuskers.thedropper.handlers.GameStageHandler;
+import io.github.cardsandhuskers.thedropper.objects.Stats;
+
+
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -25,12 +28,16 @@ public class ButtonPressListener implements Listener {
     private GameStageHandler gameStageHandler;
     private HashMap<Player, Integer> levelFails;
     private TheDropper plugin = (TheDropper) Bukkit.getPluginManager().getPlugin("TheDropper");
-    public ButtonPressListener(HashMap<Integer, Integer> playersCompleted, ArrayList<Block> buttons, ArrayList<Location> levels, GameStageHandler gameStageHandler, HashMap levelFails) {
+    private Stats stats;
+
+    public ButtonPressListener(HashMap<Integer, Integer> playersCompleted, ArrayList<Block> buttons, ArrayList<Location> levels, 
+        GameStageHandler gameStageHandler, HashMap levelFails, Stats stats) {
         this.playersCompleted = playersCompleted;
         this.levels = levels;
         this.buttons = buttons;
         this.gameStageHandler = gameStageHandler;
         this.levelFails = levelFails;
+        this.stats = stats;
     }
 
     @EventHandler
@@ -134,6 +141,13 @@ public class ButtonPressListener implements Listener {
 
                 player.sendMessage(message);
             }
+
+            //Name, Team, Level, Place, Points
+            String csvLine = p.getName() + "," + handler.getPlayerTeam(p).getTeamName() + "," + level + "," + (numCompleted+1) + "," + points;
+            // System.out.println(csvLine);
+            // p.sendMessage(csvLine);
+            stats.addEntry(csvLine);
+
             t.addTempPoints(p, points);
 
             playersCompleted.put(level, playersCompleted.get(level) + 1);

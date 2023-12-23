@@ -3,9 +3,12 @@ package io.github.cardsandhuskers.thedropper.handlers;
 import io.github.cardsandhuskers.teams.handlers.TeamHandler;
 import io.github.cardsandhuskers.teams.objects.Team;
 import io.github.cardsandhuskers.thedropper.TheDropper;
+import io.github.cardsandhuskers.thedropper.TheDropper.State;
 import io.github.cardsandhuskers.thedropper.listeners.*;
 import io.github.cardsandhuskers.thedropper.objects.Countdown;
 import io.github.cardsandhuskers.thedropper.objects.GameMessages;
+import io.github.cardsandhuskers.thedropper.objects.Stats;
+
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
@@ -35,13 +38,12 @@ public class GameStageHandler {
     public static HashMap<Player, Integer> wins;
     public static int numLevels = 0;
     private InvisibilityHandler invisibilityHandler;
+    private Stats stats;
 
-    public GameStageHandler(TheDropper plugin) {
+    public GameStageHandler(TheDropper plugin, Stats stats) {
         wins = new HashMap<>();
         this.plugin = plugin;
-
-
-
+        this.stats = stats;
     }
 
 
@@ -137,7 +139,7 @@ public class GameStageHandler {
         levelSkipHandler = new LevelSkipHandler(levels, plugin, levelFails);
 
         plugin.getServer().getPluginManager().registerEvents(new PlayerDamageListener(plugin, levels, levelFails, totalFails, levelSkipHandler), plugin);
-        plugin.getServer().getPluginManager().registerEvents(new ButtonPressListener(playersCompleted, buttons, levels, this, levelFails), plugin);
+        plugin.getServer().getPluginManager().registerEvents(new ButtonPressListener(playersCompleted, buttons, levels, this, levelFails,stats), plugin);
         plugin.getServer().getPluginManager().registerEvents(new PlayerJoinListener(plugin, levels, levelSkipHandler), plugin);
         plugin.getServer().getPluginManager().registerEvents(new ItemClickListener(), plugin);
         plugin.getServer().getPluginManager().registerEvents(new PlayerClickListener(levelSkipHandler), plugin);
@@ -332,6 +334,9 @@ public class GameStageHandler {
                     if(t.getSecondsLeft() == t.getTotalSeconds() - 1) GameMessages.announceTopPlayers();
                     if(t.getSecondsLeft() == t.getTotalSeconds() - 6) GameMessages.announceTeamPlayers();
                     if(t.getSecondsLeft() == t.getTotalSeconds() - 11) GameMessages.announceTeamLeaderboard();
+
+                    // System.out.println(stats.getCSV());
+                    stats.writeToFile(plugin.getDataFolder().toPath().toString(), "dropperStats");
                 }
         );
 
