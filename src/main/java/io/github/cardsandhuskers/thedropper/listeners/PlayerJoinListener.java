@@ -50,7 +50,6 @@ public class PlayerJoinListener implements Listener {
                         target.hidePlayer(plugin, p);
                     }
                 }
-
             }
 
         } else {

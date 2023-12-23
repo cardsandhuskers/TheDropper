@@ -120,10 +120,11 @@ public class ButtonPressListener implements Listener {
                 String message;
                 if(player.equals(p)) {
                     message = "You";
+                    message += ChatColor.GREEN + " finished level " + ChatColor.AQUA + level + ChatColor.GREEN + " in " + ChatColor.AQUA + ChatColor.BOLD + (numCompleted+1);
                 } else {
                     message = handler.getPlayerTeam(p).color + p.getName();
+                    message += ChatColor.GRAY + " finished level " + level + " in " + ChatColor.BOLD + (numCompleted+1);
                 }
-                message += ChatColor.GREEN + " finished level " + ChatColor.YELLOW + level + ChatColor.GREEN + " in " + ChatColor.YELLOW + ChatColor.BOLD + (numCompleted+1);
 
                 if(numCompleted == 10 || numCompleted == 11 || numCompleted == 12) {
                     message += "th";
@@ -136,8 +137,13 @@ public class ButtonPressListener implements Listener {
                 } else {
                     message += "th";
                 }
-                message += ChatColor.RESET + "" + ChatColor.GREEN + " place";
-                if(player.equals(p)) message += " [" + ChatColor.YELLOW + "" + ChatColor.BOLD + "+" + points + ChatColor.RESET + ChatColor.GREEN + "] points";
+
+                if(player.equals(p)) {
+                    message += ChatColor.RESET + "" + ChatColor.GREEN + " place";
+                    message += " [" + ChatColor.YELLOW + "" + ChatColor.BOLD + "+" + points + ChatColor.RESET + ChatColor.GREEN + "] points";
+                } else {
+                    message += ChatColor.RESET + "" + ChatColor.GRAY + " place";
+                }
 
                 player.sendMessage(message);
             }
