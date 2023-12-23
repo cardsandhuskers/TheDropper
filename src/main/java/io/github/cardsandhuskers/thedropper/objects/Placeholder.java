@@ -39,6 +39,16 @@ public class Placeholder extends PlaceholderExpansion {
     }
 
 
+    /**
+     * Placeholder API integration for this plugin.
+     *
+     * This method is for requesting data from the plugin
+     * when you do %TheDropper_xxx% - xxx is the request
+     *
+     * @param p - player making the request
+     * @param s - string that is passed in, i.e. the stuff inside %____% exculding plugin name
+     * @return
+     */
     @Override
     public String onRequest(OfflinePlayer p, String s) {
 
@@ -70,6 +80,7 @@ public class Placeholder extends PlaceholderExpansion {
         }
 
         String[] values = s.split("_");
+        //stats
         try {
             if(values[0].equalsIgnoreCase("wins")) {
                 ArrayList<StatCalculator.PlayerStatsHolder> statsHolders = plugin.statCalculator.getPlayerStatsHolders();

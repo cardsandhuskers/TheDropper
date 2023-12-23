@@ -23,6 +23,15 @@ public class StatCalculator {
         this.plugin = plugin;
     }
 
+    /**
+     * Calculates player stats based on stats.csv data
+     * Creates a PlayerStatsHolder tuple for every player
+     *
+     *  Populates the playerStatsHolders ArrayList with them
+     *
+     * Should be updated for new stats collection method
+     * @throws Exception
+     */
     public void calculateStats() throws Exception{
         HashMap<String, PlayerStatsHolder> playerStatsMap = new HashMap<>();
 
@@ -67,6 +76,13 @@ public class StatCalculator {
     }
 
 
+    /**
+     * This saves the results from the event.
+     *
+     * This does not save any data that new Stats class doesn't,
+     * but the calculator format has not been updated to accommodate the new format
+     * @throws IOException
+     */
     public void saveRecords() throws IOException {
         //for(Player p:wins.keySet()) if(p != null) System.out.println(p.getDisplayName() + ": " + wins.get(p));
         //System.out.println("~~~~~~~~~~~~~~~");
@@ -108,11 +124,17 @@ public class StatCalculator {
 
     }
 
-
+    /**
+     * Called by Placeholder class and returns all the stats holders
+     * @return ArrayList - playerStatsHolders
+     */
     public ArrayList<PlayerStatsHolder> getPlayerStatsHolders() {
         return new ArrayList<>(playerStatsHolders);
     }
 
+    /**
+     * Subclass that is a tuple containing the player's name and all of their wins across every event.
+     */
     public class PlayerStatsHolder {
         int wins;
         String name;
@@ -121,6 +143,13 @@ public class StatCalculator {
             this.wins = wins;
         }
     }
+
+    /**
+     * Comparator class used to compare the holders
+     *
+     * Sorts by wins and then by names as a backup
+     * (to give more deterministic results, order across ties would be random otherwise and this causes bugs)
+     */
     public class PlayerStatsComparator implements Comparator<PlayerStatsHolder> {
         public int compare(PlayerStatsHolder h1, PlayerStatsHolder h2) {
             int compare = Integer.compare(h1.wins, h2.wins);

@@ -29,6 +29,11 @@ public class LevelSkipHandler {
         this.levelFails = levelFails;
     }
 
+    /**
+     * Gives skip item to a player
+     * Called when they have failed enough times on a level to warrant receiving one
+     * @param p - Player to give item to
+     */
     public void giveSkip(Player p) {
         ItemStack skip = new ItemStack(Material.GOLD_BLOCK);
         ItemMeta skipMeta = skip.getItemMeta();
@@ -41,6 +46,13 @@ public class LevelSkipHandler {
         p.getInventory().setItem(4, skip);
     }
 
+    /**
+     * Executes what happens when a player skips a level.
+     * Teleports them to next level start and takes item away
+     *
+     * Has condition for skipping last level, where it will put them in spectator mode
+     * @param p
+     */
     public void onSkip(Player p) {
         if(currentLevel.containsKey(p.getUniqueId())) {
             currentLevel.put(p.getUniqueId(), currentLevel.get(p.getUniqueId()) + 1);

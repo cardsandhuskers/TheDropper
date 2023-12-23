@@ -49,8 +49,9 @@ public class GameStageHandler {
 
     /**
      * Starts the game: initializes maps/lists
-     * teleports players
-     * Initializes listeners
+     * teleports players to lobby, Initializes listeners, sets gamerules, and initializes lists
+     *
+     * Calls pregame countdown at the end
      */
     public void start() {
         currentLevel = new HashMap<>();
@@ -144,9 +145,6 @@ public class GameStageHandler {
         plugin.getServer().getPluginManager().registerEvents(new ItemClickListener(), plugin);
         plugin.getServer().getPluginManager().registerEvents(new PlayerClickListener(levelSkipHandler), plugin);
 
-
-
-
         pregameCountdown();
     }
 
@@ -202,6 +200,7 @@ public class GameStageHandler {
 
     /**
      * During game countdown timer
+     * Initializes invisibility, teleports players, gives armor
      */
     public void gameTimer() {
         gameTimer = new Countdown((JavaPlugin)plugin,
@@ -273,6 +272,8 @@ public class GameStageHandler {
 
     /**
      * Timer for after the game ends, to return to lobby at the end
+     *
+     * Calls statCalculation, resets players, and teleports players back
      */
     public void gameEndTimer() {
         for(Player p:Bukkit.getOnlinePlayers()) {
@@ -297,6 +298,9 @@ public class GameStageHandler {
                     TheDropper.timeVar = 0;
 
                     gameState = TheDropper.State.GAME_OVER;
+
+                    //writes new stat data
+                    stats.writeToFile(plugin.getDataFolder().toPath().toString(), "dropperStats");
 
                 },
 
@@ -334,9 +338,6 @@ public class GameStageHandler {
                     if(t.getSecondsLeft() == t.getTotalSeconds() - 1) GameMessages.announceTopPlayers();
                     if(t.getSecondsLeft() == t.getTotalSeconds() - 6) GameMessages.announceTeamPlayers();
                     if(t.getSecondsLeft() == t.getTotalSeconds() - 11) GameMessages.announceTeamLeaderboard();
-
-                    // System.out.println(stats.getCSV());
-                    stats.writeToFile(plugin.getDataFolder().toPath().toString(), "dropperStats");
                 }
         );
 
@@ -346,6 +347,11 @@ public class GameStageHandler {
 
     }
 
+    /**
+     * Cancels all timers if they aren't null
+     * Used for cancelling the game
+     * @return cancellable - whether any timer was running (was a game in progress?)
+     */
     public boolean cancelTimers() {
         boolean cancel = false;
 

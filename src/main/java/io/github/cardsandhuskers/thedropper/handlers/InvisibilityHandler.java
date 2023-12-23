@@ -20,7 +20,7 @@ import java.util.List;
 
 public class InvisibilityHandler implements Runnable{
     private TheDropper plugin;
-    private PacketAdapter invisListener;
+    //private PacketAdapter invisListener;
     private Integer assignedTaskId;
 
     public InvisibilityHandler(TheDropper plugin) {
@@ -28,13 +28,11 @@ public class InvisibilityHandler implements Runnable{
     }
 
     /**
-     * Sets correct players as glowing and enables the packet listener that will keep them glowing
+     * Sends a fake packet to everyone which makes everyone else visible again
      */
-
-
     public void disableInvis() {
-        var protocolManager = ProtocolLibrary.getProtocolManager();
-        if(invisListener != null) protocolManager.removePacketListener(invisListener);
+        //var protocolManager = ProtocolLibrary.getProtocolManager();
+        //if(invisListener != null) protocolManager.removePacketListener(invisListener);
 
         for(Team t: TeamHandler.getInstance().getTeams()) {
             for(Player p:t.getOnlinePlayers()) {
@@ -48,6 +46,9 @@ public class InvisibilityHandler implements Runnable{
         }
     }
 
+    /**
+     * Sends a packet to a player for everyone not on their team, making them all invisible
+     */
     public void sendArtificialInvisPackets() {
         for(Team t: TeamHandler.getInstance().getTeams()) {
             for(Player p:t.getOnlinePlayers()) {
