@@ -18,6 +18,11 @@ import org.bukkit.potion.PotionEffectType;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * causes flickers
+ * https://www.spigotmc.org/threads/permanent-invisibility-using-packets.590457/
+ */
+@Deprecated
 public class InvisibilityHandler implements Runnable{
     private TheDropper plugin;
     //private PacketAdapter invisListener;

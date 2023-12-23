@@ -44,10 +44,17 @@ public class PlayerJoinListener implements Listener {
             }
 
             if(gameState == TheDropper.State.GAME_IN_PROGRESS) {
+                for(Player target:Bukkit.getOnlinePlayers()) {
+                    if(handler.getPlayerTeam(target) != handler.getPlayerTeam(p)) {
+                        p.hidePlayer(plugin, target);
+                        target.hidePlayer(plugin, p);
+                    }
+                }
+
             }
 
         } else {
-            Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, ()->p.setGameMode(GameMode.SPECTATOR), 10L);
+            Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, ()->p.setGameMode(GameMode.SPECTATOR), 2L);
         }
     }
 }

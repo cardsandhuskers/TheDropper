@@ -36,8 +36,7 @@ public class GameStageHandler {
     private Countdown pregameTimer, gameTimer, gameEndTimer;
     private LevelSkipHandler levelSkipHandler;
     public static HashMap<Player, Integer> wins;
-    public static int numLevels = 0;
-    private InvisibilityHandler invisibilityHandler;
+    public static int numLevels = 0;;
     private Stats stats;
 
     public GameStageHandler(TheDropper plugin, Stats stats) {
@@ -60,11 +59,12 @@ public class GameStageHandler {
         levels = new ArrayList<>();
         buttons = new ArrayList<>();
 
+        //player prep
         for(Player p: Bukkit.getOnlinePlayers()) {
             p.teleport(plugin.getConfig().getLocation("spawn"));
             Inventory inv = p.getInventory();
             inv.clear();
-            if(handler.getPlayerTeam(p) != null) {
+            if(TeamHandler.getInstance().getPlayerTeam(p) != null) {
                 p.setGameMode(GameMode.ADVENTURE);
             } else {
                 p.setGameMode(GameMode.SPECTATOR);
@@ -73,13 +73,8 @@ public class GameStageHandler {
             p.setFoodLevel(20);
             p.setSaturation(20);
         }
-        //initialize all players at level 1
-        for(Team t:handler.getTeams()) {
-            t.resetTempPoints();
-            for(OfflinePlayer p:t.getPlayers()) {
-                currentLevel.put(p.getUniqueId(), 1);
-            }
-        }
+
+        prepLevelData();
 
         //Gamerules
         for(org.bukkit.scoreboard.Team t:Bukkit.getScoreboardManager().getMainScoreboard().getTeams()) {
@@ -93,6 +88,38 @@ public class GameStageHandler {
         world.setGameRule(GameRule.DO_WEATHER_CYCLE, false);
 
 
+        HashMap<Player, Integer> totalFails = new HashMap<>();
+        HashMap<Player, Integer> levelFails = new HashMap<>();
+
+        for(Team t: TeamHandler.getInstance().getTeams()) {
+            for(Player p:t.getOnlinePlayers()) {
+                totalFails.put(p, 0);
+                levelFails.put(p, 0);
+            }
+        }
+
+        levelSkipHandler = new LevelSkipHandler(levels, plugin, levelFails);
+
+        plugin.getServer().getPluginManager().registerEvents(new PlayerDamageListener(plugin, levels, levelFails, totalFails, levelSkipHandler), plugin);
+        plugin.getServer().getPluginManager().registerEvents(new ButtonPressListener(playersCompleted, buttons, levels, this, levelFails, stats), plugin);
+        plugin.getServer().getPluginManager().registerEvents(new PlayerJoinListener(plugin, levels, levelSkipHandler), plugin);
+        plugin.getServer().getPluginManager().registerEvents(new ItemClickListener(), plugin);
+        plugin.getServer().getPluginManager().registerEvents(new PlayerClickListener(levelSkipHandler), plugin);
+
+        pregameCountdown();
+    }
+
+    /**
+     * Handles logic for loading level data from configs and prepping the player level map
+     */
+    public void prepLevelData() {
+        //initialize all players at level 1
+        for(Team t:TeamHandler.getInstance().getTeams()) {
+            t.resetTempPoints();
+            for(OfflinePlayer p:t.getPlayers()) {
+                currentLevel.put(p.getUniqueId(), 1);
+            }
+        }
         //fill chests
         int counter = 1;
         while(plugin.getConfig().getLocation("chests." + counter) != null) {
@@ -127,25 +154,6 @@ public class GameStageHandler {
             playersCompleted.put(counter, 0);
             counter++;
         }
-        HashMap<Player, Integer> totalFails = new HashMap<>();
-        HashMap<Player, Integer> levelFails = new HashMap<>();
-
-        for(Team t: handler.getTeams()) {
-            for(Player p:t.getOnlinePlayers()) {
-                totalFails.put(p, 0);
-                levelFails.put(p, 0);
-            }
-        }
-
-        levelSkipHandler = new LevelSkipHandler(levels, plugin, levelFails);
-
-        plugin.getServer().getPluginManager().registerEvents(new PlayerDamageListener(plugin, levels, levelFails, totalFails, levelSkipHandler), plugin);
-        plugin.getServer().getPluginManager().registerEvents(new ButtonPressListener(playersCompleted, buttons, levels, this, levelFails,stats), plugin);
-        plugin.getServer().getPluginManager().registerEvents(new PlayerJoinListener(plugin, levels, levelSkipHandler), plugin);
-        plugin.getServer().getPluginManager().registerEvents(new ItemClickListener(), plugin);
-        plugin.getServer().getPluginManager().registerEvents(new PlayerClickListener(levelSkipHandler), plugin);
-
-        pregameCountdown();
     }
 
     /**
@@ -166,7 +174,7 @@ public class GameStageHandler {
                     for(Player p:Bukkit.getOnlinePlayers()) {
                         p.playSound(p.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1F);
                         p.sendTitle(ChatColor.GREEN + "GO!", "", 5, 20, 5);
-                        if(handler.getPlayerTeam(p) != null) {
+                        if(TeamHandler.getInstance().getPlayerTeam(p) != null) {
                             p.setGameMode(GameMode.ADVENTURE);
                         } else {
                             p.setGameMode(GameMode.SPECTATOR);
@@ -200,7 +208,7 @@ public class GameStageHandler {
 
     /**
      * During game countdown timer
-     * Initializes invisibility, teleports players, gives armor
+     * teleports players, gives armor
      */
     public void gameTimer() {
         gameTimer = new Countdown((JavaPlugin)plugin,
@@ -216,14 +224,13 @@ public class GameStageHandler {
                             }
                         }
                     }
-                    invisibilityHandler = new InvisibilityHandler(plugin);
-                    invisibilityHandler.startOperation();
                     gameState = TheDropper.State.GAME_IN_PROGRESS;
 
                     TeamHandler handler = TeamHandler.getInstance();
                     for(Team t:handler.getTeams()) {
                         for(Player p:t.getOnlinePlayers()) {
                             Team team = handler.getPlayerTeam(p);
+                            /*
                             ItemStack boots = new ItemStack(Material.LEATHER_BOOTS, 1);
                             LeatherArmorMeta bootsMeta = (LeatherArmorMeta) boots.getItemMeta();
                             if(handler.getPlayerTeam(p) != null) {
@@ -232,6 +239,12 @@ public class GameStageHandler {
                             bootsMeta.setUnbreakable(true);
                             boots.setItemMeta(bootsMeta);
                             p.getEquipment().setBoots(boots);
+                            */
+                            for(Player target:Bukkit.getOnlinePlayers()) {
+                                if(handler.getPlayerTeam(target) != handler.getPlayerTeam(p)) {
+                                    p.hidePlayer(plugin, target);
+                                }
+                            }
                         }
                     }
                 },
@@ -239,8 +252,6 @@ public class GameStageHandler {
                 //Timer End
                 () -> {
                     gameEndTimer();
-                    invisibilityHandler.disableInvis();
-                    invisibilityHandler.cancelOperation();
 
                 },
 
@@ -271,7 +282,7 @@ public class GameStageHandler {
     }
 
     /**
-     * Timer for after the game ends, to return to lobby at the end
+     * Timer for after the game ends, will return to lobby at the end
      *
      * Calls statCalculation, resets players, and teleports players back
      */
@@ -279,6 +290,9 @@ public class GameStageHandler {
         for(Player p:Bukkit.getOnlinePlayers()) {
             p.setGameMode(GameMode.SPECTATOR);
             p.teleport(levels.get(levels.size() - 1));
+            for(Player target:Bukkit.getOnlinePlayers()) {
+                p.showPlayer(plugin, target);
+            }
         }
         HandlerList.unregisterAll(plugin);
         for(org.bukkit.scoreboard.Team t:Bukkit.getScoreboardManager().getMainScoreboard().getTeams()) {
