@@ -47,8 +47,8 @@ public class GameMessages {
     public static String getPointsDescription(TheDropper plugin) {
         String POINTS_DESCRIPTION = ChatColor.STRIKETHROUGH + "----------------------------------------" + ChatColor.RESET +
                 ChatColor.GOLD + "" + ChatColor.BOLD + "\nHow the game is Scored (for each level):" +
-                "\n1st Place: " + ChatColor.GOLD + (int)(plugin.getConfig().getInt("maxPoints") * multiplier) + ChatColor.RESET + " points" +
-                "\nWith: -" + ChatColor.GOLD + (int)(plugin.getConfig().getInt("dropOff") * multiplier) + ChatColor.RESET + " point for each player ahead" +
+                "\n1st Place: " + ChatColor.GOLD + (plugin.getConfig().getDouble("maxPoints") * multiplier) + ChatColor.RESET + " points" +
+                "\nWith: -" + ChatColor.GOLD + (plugin.getConfig().getDouble("dropOff") * multiplier) + ChatColor.RESET + " point for each player ahead" +
                 //"\nFor finding a " + ChatColor.AQUA + "" + ChatColor.BOLD + "Diamond" + ChatColor.RESET + ": " +
                 //ChatColor.GOLD + (int)(plugin.getConfig().getInt("diamondPoints") * multiplier) + ChatColor.RESET + " points" +
                 ChatColor.STRIKETHROUGH + "\n----------------------------------------";

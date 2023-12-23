@@ -105,8 +105,8 @@ public class ButtonPressListener implements Listener {
         int numCompleted = playersCompleted.get(level);
         if(handler.getPlayerTeam(p) != null) {
             Team t = handler.getPlayerTeam(p);
-            double maxPoints = plugin.getConfig().getInt("maxPoints") * multiplier;
-            double dropOff = plugin.getConfig().getInt("dropOff") * multiplier;
+            double maxPoints = plugin.getConfig().getDouble("maxPoints") * multiplier;
+            double dropOff = plugin.getConfig().getDouble("dropOff") * multiplier;
 
             double points = maxPoints - (dropOff * numCompleted);
 
