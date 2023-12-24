@@ -18,7 +18,7 @@ public class StartGameCommand implements CommandExecutor {
     private GameStageHandler gameStageHandler;
     public StartGameCommand(TheDropper plugin) {
         this.plugin = plugin;
-        this.stats = new Stats("Name,Team,Level,Place,Points");
+        this.stats = new Stats("Name,Team,Level,Place,LevelFails,Skipped");
     }
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {

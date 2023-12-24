@@ -32,7 +32,7 @@ public class StatCalculator {
      * Should be updated for new stats collection method
      * @throws Exception
      */
-    public void calculateStats() throws Exception{
+    /*public void calculateStats() throws Exception{
         HashMap<String, PlayerStatsHolder> playerStatsMap = new HashMap<>();
 
         FileReader reader = null;
@@ -73,86 +73,139 @@ public class StatCalculator {
         playerStatsHolders.sort(playerStatsComparator);
         Collections.reverse(playerStatsHolders);
 
-    }
-
-
-    /**
-     * This saves the results from the event.
-     *
-     * This does not save any data that new Stats class doesn't,
-     * but the calculator format has not been updated to accommodate the new format
-     * @throws IOException
-     */
-    public void saveRecords() throws IOException {
-        //for(Player p:wins.keySet()) if(p != null) System.out.println(p.getDisplayName() + ": " + wins.get(p));
-        //System.out.println("~~~~~~~~~~~~~~~");
-
-        FileWriter writer = new FileWriter("plugins/TheDropper/stats.csv", true);
-        FileReader reader = new FileReader("plugins/TheDropper/stats.csv");
-
-        String[] headers = {"Event", "Team", "Name", "Wins"};
-
-        CSVFormat.Builder builder = CSVFormat.Builder.create();
-        builder.setHeader(headers);
-        CSVFormat format = builder.build();
-
-        CSVParser parser = new CSVParser(reader, format);
-
-        if(!parser.getRecords().isEmpty()) {
-            format = CSVFormat.DEFAULT;
-        }
-
-        CSVPrinter printer = new CSVPrinter(writer, format);
+    }*/
+    public void calculateStats() throws IOException {
+        int initialEvent = 2;
 
         int eventNum;
-        try {eventNum = Bukkit.getPluginManager().getPlugin("LobbyPlugin").getConfig().getInt("eventNum");} catch (Exception e) {eventNum = 1;}
-        //printer.printRecord(currentGame);
-        for(Player p:wins.keySet()) {
-            if(p == null) continue;
-            if(handler.getPlayerTeam(p) == null) continue;
-            printer.printRecord(eventNum, handler.getPlayerTeam(p).getTeamName(), p.getDisplayName(), wins.get(p));
-        }
-        writer.close();
-        try {
-            plugin.statCalculator.calculateStats();
-        } catch (Exception e) {
-            StackTraceElement[] trace = e.getStackTrace();
-            String str = "";
-            for(StackTraceElement element:trace) str += element.toString() + "\n";
-            plugin.getLogger().severe("ERROR Calculating Stats!\n" + str);
+        try {eventNum = Bukkit.getPluginManager().getPlugin("LobbyPlugin").getConfig().getInt("eventNum");}
+        catch (Exception e) {eventNum = initialEvent;}
+
+        HashMap<String, PlayerStatsHolder> playerStatsMap = new HashMap<>();
+        FileReader reader;
+
+        for(int i = initialEvent; i <= eventNum; i++) {
+            try {
+                reader = new FileReader(plugin.getDataFolder() + "/dropperStats" + i + ".csv");
+            } catch (IOException e) {
+                plugin.getLogger().warning("Stats file not found!");
+                continue;
+            }
+            String[] headers = {"Name", "Team", " Level", "Place", "LevelFails", "Skipped"};
+
+            CSVFormat.Builder builder = CSVFormat.Builder.create();
+            builder.setHeader(headers);
+            CSVFormat format = builder.build();
+
+            CSVParser parser;
+            parser = new CSVParser(reader, format);
+
+            List<CSVRecord> recordList = parser.getRecords();
+            reader.close();
+
+            for(CSVRecord r:recordList) {
+                if (r.getRecordNumber() == 1) continue;
+
+                String name = r.get(0);
+                if(playerStatsMap.containsKey(name)) {
+                    PlayerStatsHolder holder = playerStatsMap.get(name);
+                    holder.addPlacement(Integer.parseInt(r.get(3)), Integer.parseInt(r.get(4)));
+                }
+                else {
+                    PlayerStatsHolder holder = new PlayerStatsHolder(name);
+                    holder.addPlacement(Integer.parseInt(r.get(3)), Integer.parseInt(r.get(4)));
+                    playerStatsMap.put(name, holder);
+                }
+            }
+
         }
 
+        playerStatsHolders = new ArrayList<>(playerStatsMap.values());
+        System.out.println(playerStatsHolders);
+
+        playerStatsHolders.sort(new PlayerStatsPlacementComparator());
     }
 
     /**
-     * Called by Placeholder class and returns all the stats holders
+     * Called by Placeholder class and returns all the stats holders ordered by placement
      * @return ArrayList - playerStatsHolders
      */
-    public ArrayList<PlayerStatsHolder> getPlayerStatsHolders() {
-        return new ArrayList<>(playerStatsHolders);
+    public ArrayList<PlayerStatsHolder> getPlayerPlacementStatsHolders() {
+        ArrayList<PlayerStatsHolder> pph= new ArrayList<>(playerStatsHolders);
+        pph.sort(new PlayerStatsPlacementComparator());
+        return pph;
+    }
+
+    /**
+     * Called by Placeholder class and returns all the stats holders ordered by fails
+     * @return ArrayList - playerStatsHolders
+     */
+    public ArrayList<PlayerStatsHolder> getPlayerFailsStatsHolders() {
+        ArrayList<PlayerStatsHolder> pfh= new ArrayList<>(playerStatsHolders);
+        pfh.sort(new PlayerStatsPlacementComparator());
+        Collections.reverse(pfh);
+        return pfh;
     }
 
     /**
      * Subclass that is a tuple containing the player's name and all of their wins across every event.
      */
     public class PlayerStatsHolder {
-        int wins;
+        ArrayList<Integer> placements, fails;
         String name;
-        public PlayerStatsHolder(String name, int wins) {
+
+        public PlayerStatsHolder(String name) {
             this.name = name;
-            this.wins = wins;
+            placements = new ArrayList<>();
+            fails = new ArrayList<>();
+        }
+        public void addPlacement(int placement, int fail) {
+            if(placement != -1) placements.add(placement);
+            fails.add(fail);
+
+        }
+
+        public double getAveragePlacement() {
+            double sum = 0;
+            for(Integer x: placements) {
+                sum += x;
+            }
+            sum = sum / (double)placements.size();
+            return sum;
+        }
+
+        public int getFails() {
+            int sum = 0;
+            for(Integer x: placements) {
+                sum += x;
+            }
+            return sum;
         }
     }
 
     /**
      * Comparator class used to compare the holders
      *
-     * Sorts by wins and then by names as a backup
+     * Sorts by placement and then by names as a backup
      * (to give more deterministic results, order across ties would be random otherwise and this causes bugs)
      */
-    public class PlayerStatsComparator implements Comparator<PlayerStatsHolder> {
+    public class PlayerStatsPlacementComparator implements Comparator<PlayerStatsHolder> {
         public int compare(PlayerStatsHolder h1, PlayerStatsHolder h2) {
-            int compare = Integer.compare(h1.wins, h2.wins);
+            int compare = Double.compare(h1.getAveragePlacement(), h2.getAveragePlacement());
+            if(compare == 0) compare = h1.name.compareTo(h2.name);
+            return compare;
+        }
+    }
+
+    /**
+     * Comparator class used to compare the holders
+     *
+     * Sorts by fails and then by names as a backup
+     * (to give more deterministic results, order across ties would be random otherwise and this causes bugs)
+     */
+    public class PlayerStatsFailComparator implements Comparator<PlayerStatsHolder> {
+        public int compare(PlayerStatsHolder h1, PlayerStatsHolder h2) {
+            int compare = Integer.compare(h1.getFails(), h2.getFails());
             if(compare == 0) compare = h1.name.compareTo(h2.name);
             return compare;
         }

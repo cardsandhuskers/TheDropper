@@ -2,6 +2,7 @@ package io.github.cardsandhuskers.thedropper.handlers;
 
 import io.github.cardsandhuskers.teams.objects.Team;
 import io.github.cardsandhuskers.thedropper.TheDropper;
+import io.github.cardsandhuskers.thedropper.objects.Stats;
 import org.bukkit.*;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -22,11 +23,13 @@ public class LevelSkipHandler {
     private ArrayList<Location> levels;
     private TheDropper plugin;
     private HashMap<Player, Integer> levelFails;
+    Stats stats;
 
-    public LevelSkipHandler(ArrayList<Location> levels,TheDropper plugin, HashMap levelFails) {
+    public LevelSkipHandler(ArrayList<Location> levels,TheDropper plugin, HashMap levelFails, Stats stats) {
         this.levels = levels;
         this.plugin = plugin;
         this.levelFails = levelFails;
+        this.stats = stats;
     }
 
     /**
@@ -55,6 +58,10 @@ public class LevelSkipHandler {
      */
     public void onSkip(Player p) {
         if(currentLevel.containsKey(p.getUniqueId())) {
+
+            String csvLine = p.getName() + "," + handler.getPlayerTeam(p).getTeamName() + "," + currentLevel.get(p.getUniqueId()) + "," + ("-1") + "," + levelFails.get(p) + "," + "1";
+            stats.addEntry(csvLine);
+
             currentLevel.put(p.getUniqueId(), currentLevel.get(p.getUniqueId()) + 1);
 
             p.teleport(levels.get(currentLevel.get(p.getUniqueId()) - 1));

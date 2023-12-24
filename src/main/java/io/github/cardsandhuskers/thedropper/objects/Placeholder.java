@@ -83,22 +83,31 @@ public class Placeholder extends PlaceholderExpansion {
         //stats
         try {
             if(values[0].equalsIgnoreCase("wins")) {
-                ArrayList<StatCalculator.PlayerStatsHolder> statsHolders = plugin.statCalculator.getPlayerStatsHolders();
+                ArrayList<StatCalculator.PlayerStatsHolder> statsHolders = plugin.statCalculator.getPlayerPlacementStatsHolders();
                 int index = Integer.parseInt(values[1]);
                 if(index > statsHolders.size()) return "";
                 StatCalculator.PlayerStatsHolder holder = statsHolders.get(Integer.parseInt(values[1]) - 1);
                 String color = "";
                 if (handler.getPlayerTeam(Bukkit.getPlayer(holder.name)) != null)
                     color = handler.getPlayerTeam(Bukkit.getPlayer(holder.name)).color;
-                return color + holder.name + ChatColor.RESET + ": " + holder.wins;
+                return color + holder.name + ChatColor.RESET + ": " + holder.getAveragePlacement();
+            }else if(values[0].equalsIgnoreCase("fails")) {
+                ArrayList<StatCalculator.PlayerStatsHolder> statsHolders = plugin.statCalculator.getPlayerFailsStatsHolders();
+                int index = Integer.parseInt(values[1]);
+                if(index > statsHolders.size()) return "";
+                StatCalculator.PlayerStatsHolder holder = statsHolders.get(Integer.parseInt(values[1]) - 1);
+                String color = "";
+                if (handler.getPlayerTeam(Bukkit.getPlayer(holder.name)) != null)
+                    color = handler.getPlayerTeam(Bukkit.getPlayer(holder.name)).color;
+                return color + holder.name + ChatColor.RESET + ": " + holder.getFails();
             }
 
-
         } catch (Exception e) {
-            /*StackTraceElement[] trace = e.getStackTrace();
+            e.printStackTrace();
+            StackTraceElement[] trace = e.getStackTrace();
             String str = "";
             for(StackTraceElement element:trace) str += element.toString() + "\n";
-            plugin.getLogger().warning("Error with Placeholder!\n" + str);*/
+            plugin.getLogger().warning("Error with Placeholder!\n" + str);
         }
 
 

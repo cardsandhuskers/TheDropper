@@ -35,7 +35,7 @@ public final class TheDropper extends JavaPlugin {
             //Bukkit.getPluginManager().disablePlugin(this);
         }
 
-        handler = Teams.handler;
+        handler = TeamHandler.getInstance();
 
 
 

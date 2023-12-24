@@ -114,7 +114,7 @@ public class Stats {
         return getCSV();
     }
 
-    public static void main(String[] args) {
+    /*public static void main(String[] args) {
         Stats stat = new Stats("One,Two,Three");
 
         stat.addEntry("1,test,test");
@@ -129,5 +129,5 @@ public class Stats {
         System.out.println("Writing to file");
 
         stat.writeToFile(".","test");
-    }
+    }*/
 }

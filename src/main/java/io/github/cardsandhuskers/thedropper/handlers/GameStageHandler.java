@@ -98,7 +98,7 @@ public class GameStageHandler {
             }
         }
 
-        levelSkipHandler = new LevelSkipHandler(levels, plugin, levelFails);
+        levelSkipHandler = new LevelSkipHandler(levels, plugin, levelFails, stats);
 
         plugin.getServer().getPluginManager().registerEvents(new PlayerDamageListener(plugin, levels, levelFails, totalFails, levelSkipHandler), plugin);
         plugin.getServer().getPluginManager().registerEvents(new ButtonPressListener(playersCompleted, buttons, levels, this, levelFails, stats), plugin);
@@ -314,21 +314,14 @@ public class GameStageHandler {
                     gameState = TheDropper.State.GAME_OVER;
 
                     //writes new stat data
-                    stats.writeToFile(plugin.getDataFolder().toPath().toString(), "dropperStats");
+                    int eventNum;
+                    try {eventNum = Bukkit.getPluginManager().getPlugin("LobbyPlugin").getConfig().getInt("eventNum");} catch (Exception e) {eventNum = 1;}
+                    stats.writeToFile(plugin.getDataFolder().toPath().toString(), "dropperStats" + eventNum);
 
                 },
 
                 //Timer End
                 () -> {
-                    try {
-                        plugin.statCalculator.saveRecords();
-                    } catch (IOException e) {
-                        StackTraceElement[] trace = e.getStackTrace();
-                        String str = "";
-                        for(StackTraceElement element:trace) str += element.toString() + "\n";
-                        plugin.getLogger().severe("ERROR Calculating Stats!\n" + str);
-                    }
-
                     for(Player p:Bukkit.getOnlinePlayers()) {
                         if(plugin.getConfig().getLocation("lobby") != null) {
                             p.teleport(plugin.getConfig().getLocation("lobby"));
@@ -383,4 +376,5 @@ public class GameStageHandler {
         }
         return cancel;
     }
+
 }
