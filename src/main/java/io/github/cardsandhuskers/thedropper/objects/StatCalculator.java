@@ -142,7 +142,7 @@ public class StatCalculator {
      */
     public ArrayList<PlayerStatsHolder> getPlayerFailsStatsHolders() {
         ArrayList<PlayerStatsHolder> pfh= new ArrayList<>(playerStatsHolders);
-        pfh.sort(new PlayerStatsPlacementComparator());
+        pfh.sort(new PlayerStatsFailComparator());
         Collections.reverse(pfh);
         return pfh;
     }
@@ -176,7 +176,7 @@ public class StatCalculator {
 
         public int getFails() {
             int sum = 0;
-            for(Integer x: placements) {
+            for(Integer x: fails) {
                 sum += x;
             }
             return sum;
