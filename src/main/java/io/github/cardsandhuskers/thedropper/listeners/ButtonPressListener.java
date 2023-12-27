@@ -72,6 +72,9 @@ public class ButtonPressListener implements Listener {
                             if (level >= levels.size() - 1) {
                                 p.sendMessage(ChatColor.YELLOW + "You Completed all Levels!");
                                 p.setGameMode(GameMode.SPECTATOR);
+                                for(Player target: Bukkit.getOnlinePlayers()) {
+                                    p.showPlayer(plugin, target);
+                                }
 
                                 if (playersCompleted.get(currentLevel.get(p.getUniqueId()) - 1) == currentLevel.keySet().size()) {
                                     gameStageHandler.endGame();

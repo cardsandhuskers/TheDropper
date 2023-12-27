@@ -76,6 +76,9 @@ public class LevelSkipHandler {
             if (currentLevel.get(p.getUniqueId()) >= levels.size()) {
                 p.sendMessage(ChatColor.YELLOW + "You Completed all Levels!");
                 p.setGameMode(GameMode.SPECTATOR);
+                for(Player target: Bukkit.getOnlinePlayers()) {
+                    p.showPlayer(plugin, target);
+                }
                 //TODO: if anyone skips the last level, game won't end early, too lazy to fix rn
             }
 

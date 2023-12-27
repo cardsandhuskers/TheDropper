@@ -43,7 +43,7 @@ public class PlayerJoinListener implements Listener {
                 p.teleport(levels.get(currentLevel.get(p.getUniqueId()) - 1));
             }
 
-            if(gameState == TheDropper.State.GAME_IN_PROGRESS) {
+            if(gameState == TheDropper.State.GAME_IN_PROGRESS && handler.getPlayerTeam(p) != null) {
                 for(Player target:Bukkit.getOnlinePlayers()) {
                     if(handler.getPlayerTeam(target) != handler.getPlayerTeam(p)) {
                         p.hidePlayer(plugin, target);
