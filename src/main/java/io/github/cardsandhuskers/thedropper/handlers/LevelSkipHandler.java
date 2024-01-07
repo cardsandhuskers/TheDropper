@@ -59,7 +59,7 @@ public class LevelSkipHandler {
     public void onSkip(Player p) {
         if(currentLevel.containsKey(p.getUniqueId())) {
 
-            String csvLine = p.getName() + "," + handler.getPlayerTeam(p).getTeamName() + "," + currentLevel.get(p.getUniqueId()) + "," + ("-1") + "," + levelFails.get(p) + "," + "1";
+            String csvLine = p.getName() + "," + handler.getPlayerTeam(p).getTeamName() + "," + currentLevel.get(p.getUniqueId()) + "," + ("-1") + "," + levelFails.getOrDefault(p, 0) + "," + "1";
             stats.addEntry(csvLine);
 
             currentLevel.put(p.getUniqueId(), currentLevel.get(p.getUniqueId()) + 1);

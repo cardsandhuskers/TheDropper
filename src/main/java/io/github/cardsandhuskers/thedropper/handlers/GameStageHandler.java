@@ -336,6 +336,15 @@ public class GameStageHandler {
                         }
                     }
 
+                    try {
+                        plugin.statCalculator.calculateStats();
+                    } catch (Exception e) {
+                        StackTraceElement[] trace = e.getStackTrace();
+                        String str = "";
+                        for(StackTraceElement element:trace) str += element.toString() + "\n";
+                        plugin.getLogger().severe("ERROR Calculating Stats!\n" + str);
+                    }
+
                 },
 
                 //Each Second

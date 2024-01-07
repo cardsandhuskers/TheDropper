@@ -6,7 +6,6 @@ import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 
@@ -90,7 +89,7 @@ public class Placeholder extends PlaceholderExpansion {
                 String color = "";
                 if (handler.getPlayerTeam(Bukkit.getPlayer(holder.name)) != null)
                     color = handler.getPlayerTeam(Bukkit.getPlayer(holder.name)).color;
-                return color + holder.name + ChatColor.RESET + ": " + holder.getAveragePlacement();
+                return color + holder.name + ChatColor.RESET + ": " + String.format("%.1f", holder.getAveragePlacement());
             }else if(values[0].equalsIgnoreCase("fails")) {
                 ArrayList<StatCalculator.PlayerStatsHolder> statsHolders = plugin.statCalculator.getPlayerFailsStatsHolders();
                 int index = Integer.parseInt(values[1]);
@@ -109,6 +108,14 @@ public class Placeholder extends PlaceholderExpansion {
             for(StackTraceElement element:trace) str += element.toString() + "\n";
             plugin.getLogger().warning("Error with Placeholder!\n" + str);
         }
+        try {
+            if(values[0].equalsIgnoreCase("yourFinish")) {
+                return plugin.statCalculator.getPlayerFinishPosition(p);
+            }
+            if(values[0].equalsIgnoreCase("yourFails")) {
+                return plugin.statCalculator.getPlayerFailsPosition(p);
+            }
+        } catch (Exception e) {e.printStackTrace();}
 
 
         return null;

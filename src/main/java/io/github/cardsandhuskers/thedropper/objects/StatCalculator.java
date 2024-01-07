@@ -1,20 +1,19 @@
 package io.github.cardsandhuskers.thedropper.objects;
 
+import io.github.cardsandhuskers.teams.handlers.TeamHandler;
+import io.github.cardsandhuskers.teams.objects.Team;
 import io.github.cardsandhuskers.thedropper.TheDropper;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
+import org.bukkit.ChatColor;
+import org.bukkit.OfflinePlayer;
 
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 
-import static io.github.cardsandhuskers.teams.Teams.handler;
-import static io.github.cardsandhuskers.thedropper.handlers.GameStageHandler.wins;
 
 public class StatCalculator {
     private TheDropper plugin;
@@ -29,53 +28,10 @@ public class StatCalculator {
      *
      *  Populates the playerStatsHolders ArrayList with them
      *
-     * Should be updated for new stats collection method
-     * @throws Exception
+     * @throws IOException
      */
-    /*public void calculateStats() throws Exception{
-        HashMap<String, PlayerStatsHolder> playerStatsMap = new HashMap<>();
-
-        FileReader reader = null;
-        try {
-            reader = new FileReader(plugin.getDataFolder() + "/stats.csv");
-        } catch (IOException e) {
-            plugin.getLogger().warning("Stats file not found!");
-            return;
-        }
-        String[] headers = {"Event", "Team", "Name", "Wins"};
-
-        CSVFormat.Builder builder = CSVFormat.Builder.create();
-        builder.setHeader(headers);
-        CSVFormat format = builder.build();
-
-        CSVParser parser;
-        try {
-            parser = new CSVParser(reader, format);
-        } catch (IOException e) {
-            throw new Exception(e);
-        }
-        List<CSVRecord> recordList = parser.getRecords();
-
-        try {
-            reader.close();
-        } catch (IOException e) {
-            throw new Exception(e);
-        }
-
-        for(CSVRecord r:recordList) {
-            if (r.getRecordNumber() == 1) continue;
-            String name = r.get(2);
-            if(playerStatsMap.containsKey(name)) playerStatsMap.get(name).wins += Integer.parseInt(r.get(3));
-            else playerStatsMap.put(name, new PlayerStatsHolder(name, Integer.parseInt(r.get(3))));
-        }
-        playerStatsHolders = new ArrayList<>(playerStatsMap.values());
-        Comparator playerStatsComparator = new PlayerStatsComparator();
-        playerStatsHolders.sort(playerStatsComparator);
-        Collections.reverse(playerStatsHolders);
-
-    }*/
     public void calculateStats() throws IOException {
-        int initialEvent = 2;
+        int initialEvent = 1;
 
         int eventNum;
         try {eventNum = Bukkit.getPluginManager().getPlugin("LobbyPlugin").getConfig().getInt("eventNum");}
@@ -109,6 +65,10 @@ public class StatCalculator {
                 String name = r.get(0);
                 if(playerStatsMap.containsKey(name)) {
                     PlayerStatsHolder holder = playerStatsMap.get(name);
+
+                    //skip over levels they skipped
+                    if(r.get(3).equalsIgnoreCase("-1")) continue;
+
                     holder.addPlacement(Integer.parseInt(r.get(3)), Integer.parseInt(r.get(4)));
                 }
                 else {
@@ -121,7 +81,6 @@ public class StatCalculator {
         }
 
         playerStatsHolders = new ArrayList<>(playerStatsMap.values());
-        System.out.println(playerStatsHolders);
 
         playerStatsHolders.sort(new PlayerStatsPlacementComparator());
     }
@@ -146,6 +105,55 @@ public class StatCalculator {
         Collections.reverse(pfh);
         return pfh;
     }
+
+    public String getPlayerFinishPosition(OfflinePlayer p) {
+        String name = p.getName();
+        ArrayList<PlayerStatsHolder> pph= new ArrayList<>(playerStatsHolders);
+        pph.sort(new PlayerStatsPlacementComparator());
+
+        int i = 1;
+        PlayerStatsHolder playerHolder = null;
+        for(PlayerStatsHolder holder: pph) {
+            if(holder.name.equals(name)) {
+                playerHolder = holder;
+                break;
+            }
+            i++;
+        }
+
+
+        if(playerHolder == null || i <= 10) return "";
+
+        Team team = TeamHandler.getInstance().getPlayerTeam(p.getPlayer());
+        String color = "";
+        if(team != null) color = team.getColor();
+
+        return i + ". " + color + "You" + ChatColor.RESET + ": " + String.format("%.1f", playerHolder.getAveragePlacement());
+    }
+
+    public String getPlayerFailsPosition(OfflinePlayer p) {
+        String name = p.getName();
+        ArrayList<PlayerStatsHolder> pph= new ArrayList<>(playerStatsHolders);
+        pph.sort(new PlayerStatsFailComparator());
+
+        int i = 1;
+        PlayerStatsHolder playerHolder = null;
+        for(PlayerStatsHolder holder: pph) {
+            if(holder.name.equals(name)) {
+                playerHolder = holder;
+                break;
+            }
+            i++;
+        }
+        if(playerHolder == null || i <= 10) return "";
+
+        Team team = TeamHandler.getInstance().getPlayerTeam(p.getPlayer());
+        String color = "";
+        if(team != null) color = team.getColor();
+
+        return i + ". " + color + "You" + ChatColor.RESET + ": " + playerHolder.getFails();
+    }
+
 
     /**
      * Subclass that is a tuple containing the player's name and all of their wins across every event.

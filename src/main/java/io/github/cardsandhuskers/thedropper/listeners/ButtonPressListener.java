@@ -152,7 +152,7 @@ public class ButtonPressListener implements Listener {
             }
 
             //Name, Team, Level, Place, Points
-            String csvLine = p.getName() + "," + handler.getPlayerTeam(p).getTeamName() + "," + level + "," + (numCompleted+1) + "," + levelFails.get(p) + "," + "0";
+            String csvLine = p.getName() + "," + handler.getPlayerTeam(p).getTeamName() + "," + level + "," + (numCompleted+1) + "," + levelFails.getOrDefault(p, 0) + "," + "0";
             stats.addEntry(csvLine);
 
             t.addTempPoints(p, points);
