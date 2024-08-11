@@ -133,8 +133,7 @@ public class StatCalculator {
 
     public String getPlayerFailsPosition(OfflinePlayer p) {
         String name = p.getName();
-        ArrayList<PlayerStatsHolder> pph= new ArrayList<>(playerStatsHolders);
-        pph.sort(new PlayerStatsFailComparator());
+        ArrayList<PlayerStatsHolder> pph = getPlayerFailsStatsHolders();
 
         int i = 1;
         PlayerStatsHolder playerHolder = null;
@@ -145,6 +144,7 @@ public class StatCalculator {
             }
             i++;
         }
+
         if(playerHolder == null || i <= 10) return "";
 
         Team team = TeamHandler.getInstance().getPlayerTeam(p.getPlayer());
